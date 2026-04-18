@@ -56,11 +56,21 @@ class FitnessPro_Core {
 	}
 
 	private function define_admin_hooks() {
-		$admin = new FitnessPro_Admin( $this->version );
+		$admin    = new FitnessPro_Admin( $this->version );
+		$settings = new FitnessPro_Settings();
+
 		$this->loader->add_action( 'admin_enqueue_scripts', $admin, 'enqueue_styles' );
 		$this->loader->add_action( 'admin_enqueue_scripts', $admin, 'enqueue_scripts' );
 		$this->loader->add_action( 'admin_enqueue_scripts', $admin, 'enqueue_metabox_assets' );
+		$this->loader->add_action( 'admin_enqueue_scripts', $admin, 'enqueue_settings_assets' );
 		$this->loader->add_action( 'admin_menu', $admin, 'register_menus' );
+
+		// Product map save (form POST via admin-post.php)
+		$this->loader->add_action( 'admin_post_fp_save_product_map', $settings, 'handle_product_map_save' );
+
+		// Dynamic field AJAX (admin-only; no nopriv variant needed)
+		$this->loader->add_action( 'wp_ajax_fp_add_field_item',    $settings, 'ajax_add_field_item' );
+		$this->loader->add_action( 'wp_ajax_fp_remove_field_item', $settings, 'ajax_remove_field_item' );
 	}
 
 	private function define_public_hooks() {

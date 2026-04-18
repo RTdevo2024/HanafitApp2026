@@ -36,6 +36,11 @@ This is **FitnessPro System** — a WordPress plugin providing an RTL-compatible
 | Option Key | Value | Description |
 |---|---|---|
 | `fitnesspro_db_version` | `1.0.0` | Tracks installed DB schema version |
+| `fitnesspro_product_map` | `{ workout_product_id, meal_product_id }` | WooCommerce product ID mapping per plan type |
+| `fitnesspro_field_diseases` | JSON array of strings | Dynamic list — بیماری‌ها |
+| `fitnesspro_field_goals` | JSON array of strings | Dynamic list — اهداف |
+| `fitnesspro_field_activity_levels` | JSON array of strings | Dynamic list — سطح فعالیت |
+| `fitnesspro_field_eating_disorders` | JSON array of strings | Dynamic list — اختلالات تغذیه‌ای |
 
 ## Post Meta Keys
 
@@ -88,6 +93,27 @@ This is **FitnessPro System** — a WordPress plugin providing an RTL-compatible
   - Coach role uses `edit_posts` cap (standard WP) rather than a custom cap — avoids breaking the admin menu visibility system.
   - WooCommerce treated as soft dependency: admin notice fires if missing, but plugin stays functional.
 
+## [2026-04-18] — Prompt 3: Admin Dashboard & WooCommerce Product Mapping
+
+- **Action:** Built the central admin dashboard (stats cards + quick links), WooCommerce product-to-plan mapping settings, four dynamic field lists with AJAX, and the FitnessPro orders WP_List_Table.
+- **Files Created:**
+  - `admin/class-fitnesspro-settings.php` — `FitnessPro_Settings`: renders settings page (2 tabs), handles `admin_post_fp_save_product_map`, and AJAX handlers `fp_add_field_item` / `fp_remove_field_item`. Stores data in 5 `wp_options` keys.
+  - `admin/class-fitnesspro-orders-table.php` — `FitnessPro_Orders_Table` (extends WP_List_Table): queries `wp_fitness_user_plans` + `wp_users` JOIN; status filter tabs (`get_views`); sortable columns; RTL column renderers with status/type badges.
+  - `assets/js/admin-settings.js` — `DynamicFieldManager` class: delegated click + Enter-key handling; AJAX add/remove; tag re-rendering; `_shake()` for empty-input feedback; inline error display.
+  - `assets/css/admin-settings.css` — Stats grid (4-col responsive), quick links, settings nav tabs, form table RTL, field group cards grid (2-col), tag pills, add-item row, orders table overrides, type/status badges.
+- **Files Modified:**
+  - `hanafit-app.php` — Added `require_once` for settings and orders-table classes.
+  - `admin/class-fitnesspro-admin.php` — Full rewrite: added `render_orders_page()`, `render_settings_page()`, `render_dashboard()` (with live DB stats), `enqueue_settings_assets()`; extended menu to داشبورد / سفارشات / تنظیمات / داشبورد مربی.
+  - `includes/class-fitnesspro-core.php` — Added settings hooks: `admin_post_fp_save_product_map`, `wp_ajax_fp_add_field_item`, `wp_ajax_fp_remove_field_item`; wired `enqueue_settings_assets`.
+- **Key Decisions:**
+  - Dynamic field AJAX reuses `fitnesspro_admin_nonce` — avoids a second nonce creation; `check_ajax_referer` enforces the correct action string on backend.
+  - `FitnessPro_Settings` instantiated fresh in `render_settings_page()` — keeps it stateless and avoids storing a reference on the admin object.
+  - `get_views()` in the orders table runs a single `GROUP BY` query — one trip to the DB for all status counts.
+  - Product map tab shows WC-inactive notice rather than broken selects when WooCommerce is not loaded.
+  - Orders table `$orderby` and `$status_filter` are whitelist-validated before interpolation into SQL — prevents injection via query string.
+
+---
+
 ## [2026-04-18] — Prompt 2: CPTs & Advanced Repeater Meta Boxes
 
 - **Action:** Registered `workout_template` and `meal_template` CPTs; built 7-day workout repeater and 5-meal nutrition planner meta boxes with wp.media integration.
@@ -111,8 +137,8 @@ This is **FitnessPro System** — a WordPress plugin providing an RTL-compatible
 
 # Next Steps
 
-1. **Plan Assignment** — Admin AJAX form: assign a `workout_template` or `meal_template` to a user → INSERT into `wp_fitness_user_plans` + copy template JSON into `wp_fitness_active_content`.
-2. **WooCommerce Integration** — Hook `woocommerce_order_status_completed` to auto-activate plans when the linked `order_id` completes payment.
-3. **Frontend Dashboard** — Shortcode `[fitnesspro_dashboard]` showing the logged-in user's active plans from `wp_fitness_active_content` with RTL layout.
-4. **Daily Progress Tracker** — AJAX endpoint for users to mark exercises complete; writes to `wp_fitness_daily_progress`.
-5. **Ticket System** — AJAX send/receive messages into `wp_fitness_tickets`; separate coach and client views.
+1. **Plan Assignment** — Admin form to assign `workout_template` / `meal_template` to a user from the orders screen → INSERT `wp_fitness_user_plans` + copy template JSON to `wp_fitness_active_content`; include coach selector using the coach role.
+2. **WooCommerce Integration** — Hook `woocommerce_order_status_completed` → check `fitnesspro_product_map` → auto-create pending plan row in `wp_fitness_user_plans` linked to `order_id`.
+3. **Frontend Dashboard** — Shortcode `[fitnesspro_dashboard]` showing active plans from `wp_fitness_active_content` with RTL day/meal layout.
+4. **Daily Progress Tracker** — AJAX endpoint for users to mark exercises complete; writes `completed_json` to `wp_fitness_daily_progress`.
+5. **Ticket System** — AJAX messaging into `wp_fitness_tickets`; coach and client views with attachment upload.

@@ -24,6 +24,8 @@ require_once FITNESSPRO_PLUGIN_DIR . 'includes/class-fitnesspro-database.php';
 require_once FITNESSPRO_PLUGIN_DIR . 'includes/class-fitnesspro-roles.php';
 require_once FITNESSPRO_PLUGIN_DIR . 'includes/class-fitnesspro-cpts.php';
 require_once FITNESSPRO_PLUGIN_DIR . 'includes/class-fitnesspro-meta-boxes.php';
+require_once FITNESSPRO_PLUGIN_DIR . 'admin/class-fitnesspro-settings.php';
+require_once FITNESSPRO_PLUGIN_DIR . 'admin/class-fitnesspro-orders-table.php';
 require_once FITNESSPRO_PLUGIN_DIR . 'includes/class-fitnesspro-activator.php';
 require_once FITNESSPRO_PLUGIN_DIR . 'includes/class-fitnesspro-deactivator.php';
 require_once FITNESSPRO_PLUGIN_DIR . 'admin/class-fitnesspro-admin.php';
