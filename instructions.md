@@ -41,7 +41,8 @@ This is **FitnessPro System** — a WordPress plugin providing an RTL-compatible
 
 | Meta Key | Post Type | Description | Status |
 |---|---|---|---|
-| *(none yet)* | | | |
+| `_tpl_data` | `workout_template` | JSON-encoded 7-day plan: `{ saturday: { exercises: [{name,sets,reps,note,media_id,media_url}] }, ... }` | ✅ Active |
+| `_tpl_data` | `meal_template` | JSON-encoded 5-meal plan: `{ breakfast: {items,calories,protein,carbs,fat,note}, snack1, lunch, snack2, dinner }` | ✅ Active |
 
 ## User Meta Keys
 
@@ -87,13 +88,31 @@ This is **FitnessPro System** — a WordPress plugin providing an RTL-compatible
   - Coach role uses `edit_posts` cap (standard WP) rather than a custom cap — avoids breaking the admin menu visibility system.
   - WooCommerce treated as soft dependency: admin notice fires if missing, but plugin stays functional.
 
+## [2026-04-18] — Prompt 2: CPTs & Advanced Repeater Meta Boxes
+
+- **Action:** Registered `workout_template` and `meal_template` CPTs; built 7-day workout repeater and 5-meal nutrition planner meta boxes with wp.media integration.
+- **Files Created:**
+  - `includes/class-fitnesspro-cpts.php` — Registers `workout_template` and `meal_template` CPTs (private, show_in_menu under fitnesspro-dashboard, map_meta_cap).
+  - `includes/class-fitnesspro-meta-boxes.php` — `FitnessPro_Meta_Boxes`: renders workout (7-day tab UI + exercise repeater) and meal (5-slot cards with macros) meta boxes; sanitizes + saves all data as JSON into `_tpl_data`.
+  - `assets/css/meta-boxes.css` — Full RTL meta-box stylesheet: tab pills, exercise row cards with drag handle, meal cards color-coded by slot, macro input row with units.
+  - `assets/js/meta-boxes.js` — `WorkoutPlanner` class (tab switch, add/delete/reindex rows, wp.media frame); `MealPlanner` class (live macro totals bar).
+- **Files Modified:**
+  - `hanafit-app.php` — Added `require_once` for CPTs and Meta Boxes classes.
+  - `includes/class-fitnesspro-core.php` — Added `define_content_hooks()` method wiring CPT `init` and `add_meta_boxes` / `save_post` hooks via Loader.
+  - `admin/class-fitnesspro-admin.php` — Added `enqueue_metabox_assets()`: loads `wp_enqueue_media()`, `meta-boxes.css`, `meta-boxes.js`, and `fitnesspro_mb` JS config only on CPT edit screens.
+- **Key Decisions:**
+  - Both CPTs share the same meta key `_tpl_data` (differentiated by post_type at save time) — one query per template fetch.
+  - Unnamed exercises are silently dropped during sanitization to keep JSON clean.
+  - wp.media frame is created once and reused (expensive to instantiate); `_mediaTarget` pointer updated before each `open()` call.
+  - Meal macro totals bar is injected above the planner by JS, not in PHP — keeps server markup clean and totals always in sync with live input.
+  - Exercise row template uses `<script type="text/html">` with `{{DAY}}` / `{{INDEX}}` placeholders replaced by JS — avoids encoding issues and keeps PHP rendering logic DRY.
+
 ---
 
 # Next Steps
 
-1. **Plan Builder UI** — Admin screen for creating workout/meal plan templates (custom post type or DB-driven).
-2. **Plan Assignment** — AJAX-powered form to assign a plan to a user (`wp_fitness_user_plans` INSERT).
-3. **WooCommerce Integration** — Hook into `woocommerce_order_status_completed` to auto-activate plans linked to an `order_id`.
-4. **Frontend Dashboard** — Shortcode `[fitnesspro_dashboard]` showing the logged-in user's active plans from `wp_fitness_active_content`.
-5. **Ticket System** — AJAX send/receive messages writing to `wp_fitness_tickets`; coach and client views.
-6. **Daily Progress Tracker** — Shortcode or AJAX endpoint allowing users to mark exercises complete (writes to `wp_fitness_daily_progress`).
+1. **Plan Assignment** — Admin AJAX form: assign a `workout_template` or `meal_template` to a user → INSERT into `wp_fitness_user_plans` + copy template JSON into `wp_fitness_active_content`.
+2. **WooCommerce Integration** — Hook `woocommerce_order_status_completed` to auto-activate plans when the linked `order_id` completes payment.
+3. **Frontend Dashboard** — Shortcode `[fitnesspro_dashboard]` showing the logged-in user's active plans from `wp_fitness_active_content` with RTL layout.
+4. **Daily Progress Tracker** — AJAX endpoint for users to mark exercises complete; writes to `wp_fitness_daily_progress`.
+5. **Ticket System** — AJAX send/receive messages into `wp_fitness_tickets`; separate coach and client views.

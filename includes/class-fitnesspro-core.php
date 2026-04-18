@@ -19,6 +19,7 @@ class FitnessPro_Core {
 		$this->define_admin_hooks();
 		$this->define_public_hooks();
 		$this->define_role_hooks();
+		$this->define_content_hooks();
 	}
 
 	private function load_textdomain() {
@@ -58,6 +59,7 @@ class FitnessPro_Core {
 		$admin = new FitnessPro_Admin( $this->version );
 		$this->loader->add_action( 'admin_enqueue_scripts', $admin, 'enqueue_styles' );
 		$this->loader->add_action( 'admin_enqueue_scripts', $admin, 'enqueue_scripts' );
+		$this->loader->add_action( 'admin_enqueue_scripts', $admin, 'enqueue_metabox_assets' );
 		$this->loader->add_action( 'admin_menu', $admin, 'register_menus' );
 	}
 
@@ -70,6 +72,17 @@ class FitnessPro_Core {
 	private function define_role_hooks() {
 		$roles = new FitnessPro_Roles();
 		$this->loader->add_action( 'admin_init', $roles, 'restrict_dashboard_access' );
+	}
+
+	private function define_content_hooks() {
+		// CPTs
+		$cpts = new FitnessPro_CPTs();
+		$this->loader->add_action( 'init', $cpts, 'register' );
+
+		// Meta Boxes
+		$meta_boxes = new FitnessPro_Meta_Boxes();
+		$this->loader->add_action( 'add_meta_boxes', $meta_boxes, 'add_meta_boxes' );
+		$this->loader->add_action( 'save_post', $meta_boxes, 'save_meta', 10, 2 );
 	}
 
 	public function run() {

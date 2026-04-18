@@ -51,6 +51,49 @@ class FitnessPro_Admin {
 		);
 	}
 
+	/**
+	 * Enqueues meta-box assets only on workout_template / meal_template edit screens.
+	 * Also loads wp.media for the image/video picker.
+	 */
+	public function enqueue_metabox_assets( $hook_suffix ) {
+		if ( ! in_array( $hook_suffix, array( 'post.php', 'post-new.php' ), true ) ) {
+			return;
+		}
+		$screen = get_current_screen();
+		if ( ! $screen || ! in_array( $screen->post_type, array( 'workout_template', 'meal_template' ), true ) ) {
+			return;
+		}
+
+		wp_enqueue_media();
+
+		wp_enqueue_style(
+			'fitnesspro-meta-boxes',
+			FITNESSPRO_PLUGIN_URL . 'assets/css/meta-boxes.css',
+			array(),
+			$this->version
+		);
+
+		wp_enqueue_script(
+			'fitnesspro-meta-boxes',
+			FITNESSPRO_PLUGIN_URL . 'assets/js/meta-boxes.js',
+			array(),
+			$this->version,
+			true
+		);
+
+		wp_localize_script(
+			'fitnesspro-meta-boxes',
+			'fitnesspro_mb',
+			array(
+				'strings' => array(
+					'select_media' => __( 'انتخاب تصویر یا ویدئو', 'fitnesspro' ),
+					'use_media'    => __( 'استفاده از این رسانه', 'fitnesspro' ),
+					'remove_media' => __( 'حذف رسانه', 'fitnesspro' ),
+				),
+			)
+		);
+	}
+
 	public function register_menus() {
 		// Main menu — visible to site admins only.
 		add_menu_page(

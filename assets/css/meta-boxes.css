@@ -1,0 +1,397 @@
+/* ============================================================
+   FitnessPro — Meta Boxes RTL Stylesheet
+   Applies to: workout_template and meal_template edit screens
+   ============================================================ */
+
+/* ── Shared planner wrapper ──────────────────────────────────── */
+.fp-planner {
+	direction: rtl;
+	text-align: right;
+	font-family: 'Vazirmatn', Tahoma, Arial, sans-serif;
+	font-size: 13px;
+	color: #1d2327;
+}
+
+.fp-planner *,
+.fp-planner *::before,
+.fp-planner *::after {
+	box-sizing: border-box;
+}
+
+/* ── Shared field primitives ─────────────────────────────────── */
+.fp-field {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+}
+
+.fp-field label {
+	font-weight: 600;
+	font-size: 12px;
+	color: #50575e;
+}
+
+.fp-field input[type="text"],
+.fp-field input[type="number"],
+.fp-field textarea {
+	padding: 6px 10px;
+	border: 1px solid #c3c4c7;
+	border-radius: 4px;
+	background: #fff;
+	font-family: inherit;
+	font-size: 13px;
+	color: #1d2327;
+	transition: border-color 0.15s ease;
+	width: 100%;
+}
+
+.fp-field input[type="text"]:focus,
+.fp-field input[type="number"]:focus,
+.fp-field textarea:focus {
+	border-color: #2271b1;
+	outline: none;
+	box-shadow: 0 0 0 2px rgba(34, 113, 177, 0.15);
+}
+
+.fp-field textarea {
+	resize: vertical;
+	min-height: 70px;
+}
+
+.fp-field--full  { width: 100%; }
+.fp-field--sm    { width: 72px; flex-shrink: 0; }
+.fp-field--grow  { flex: 1; }
+
+.fp-field-row {
+	display: flex;
+	align-items: flex-start;
+	gap: 10px;
+	flex-wrap: wrap;
+}
+
+/* ── Shared button ───────────────────────────────────────────── */
+.fp-btn {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	padding: 5px 12px;
+	border: 1px solid #c3c4c7;
+	border-radius: 4px;
+	background: #f6f7f7;
+	font-family: inherit;
+	font-size: 12px;
+	font-weight: 600;
+	cursor: pointer;
+	color: #1d2327;
+	transition: background 0.12s ease, border-color 0.12s ease;
+	white-space: nowrap;
+}
+
+.fp-btn:hover {
+	background: #fff;
+	border-color: #2271b1;
+	color: #2271b1;
+}
+
+.fp-btn--add {
+	margin-top: 10px;
+	border-style: dashed;
+	color: #2271b1;
+	border-color: #2271b1;
+	background: #f0f6fc;
+	width: 100%;
+	justify-content: center;
+}
+
+.fp-btn--add:hover {
+	background: #dce9f5;
+}
+
+.fp-btn--media {
+	background: #fff;
+	border-color: #2271b1;
+	color: #2271b1;
+}
+
+.fp-btn--remove-media {
+	color: #b32d2e;
+	border-color: #b32d2e;
+}
+
+.fp-btn--remove-media:hover {
+	background: #fef0f0;
+}
+
+/* ================================================================
+   WORKOUT PLANNER
+   ================================================================ */
+
+/* ── Day Tabs ────────────────────────────────────────────────── */
+.fp-tabs {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 4px;
+	padding-bottom: 12px;
+	border-bottom: 2px solid #e5e5e5;
+	margin-bottom: 0;
+}
+
+.fp-tab-btn {
+	padding: 6px 14px;
+	border: 1px solid #c3c4c7;
+	border-radius: 20px;
+	background: #f6f7f7;
+	font-family: inherit;
+	font-size: 12px;
+	font-weight: 600;
+	cursor: pointer;
+	color: #50575e;
+	transition: all 0.12s ease;
+}
+
+.fp-tab-btn:hover {
+	background: #fff;
+	border-color: #2271b1;
+	color: #2271b1;
+}
+
+.fp-tab-btn--active {
+	background: #2271b1;
+	border-color: #2271b1;
+	color: #fff;
+}
+
+.fp-tab-btn--active:hover {
+	background: #135e96;
+	border-color: #135e96;
+	color: #fff;
+}
+
+/* ── Tab Panels ──────────────────────────────────────────────── */
+.fp-tab-panel {
+	display: none;
+	padding: 16px 0 0;
+}
+
+.fp-tab-panel--active {
+	display: block;
+}
+
+/* ── Exercise List ───────────────────────────────────────────── */
+.fp-exercises-list {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+}
+
+/* ── Exercise Row Card ───────────────────────────────────────── */
+.fp-exercise-row {
+	display: flex;
+	align-items: flex-start;
+	gap: 8px;
+	background: #fff;
+	border: 1px solid #dcdcde;
+	border-radius: 6px;
+	padding: 12px;
+	position: relative;
+	transition: box-shadow 0.12s ease;
+}
+
+.fp-exercise-row:hover {
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+/* Drag handle */
+.fp-row-handle {
+	font-size: 16px;
+	color: #c3c4c7;
+	cursor: grab;
+	padding: 4px 2px;
+	flex-shrink: 0;
+	user-select: none;
+}
+
+.fp-row-handle:active {
+	cursor: grabbing;
+}
+
+/* Fields container */
+.fp-row-fields {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+}
+
+/* Delete button */
+.fp-row-delete {
+	position: absolute;
+	top: 8px;
+	left: 8px;
+	width: 22px;
+	height: 22px;
+	border: none;
+	border-radius: 50%;
+	background: transparent;
+	color: #c3c4c7;
+	font-size: 14px;
+	line-height: 1;
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 0;
+	transition: background 0.12s ease, color 0.12s ease;
+}
+
+.fp-row-delete:hover {
+	background: #fef0f0;
+	color: #b32d2e;
+}
+
+/* Media field */
+.fp-media-field {
+	gap: 8px;
+}
+
+.fp-media-preview {
+	min-height: 0;
+}
+
+.fp-media-thumb {
+	display: block;
+	width: 80px;
+	height: 60px;
+	object-fit: cover;
+	border-radius: 4px;
+	border: 1px solid #dcdcde;
+}
+
+.fp-video-label {
+	display: inline-block;
+	padding: 4px 8px;
+	background: #f0f6fc;
+	border: 1px solid #bdd7ee;
+	border-radius: 4px;
+	font-size: 12px;
+	color: #2271b1;
+}
+
+.fp-media-actions {
+	display: flex;
+	gap: 6px;
+}
+
+/* ================================================================
+   MEAL PLANNER
+   ================================================================ */
+.fp-meal-planner {
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+}
+
+/* Meal card */
+.fp-meal-card {
+	border: 1px solid #dcdcde;
+	border-radius: 8px;
+	overflow: hidden;
+	background: #fff;
+}
+
+/* Meal card header — color coded by slot */
+.fp-meal-card__header {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding: 10px 16px;
+	background: #f0f6fc;
+	border-bottom: 1px solid #dcdcde;
+}
+
+.fp-meal-card__header--breakfast { background: #fff8e6; border-bottom-color: #f5d87a; }
+.fp-meal-card__header--snack1    { background: #edf7ed; border-bottom-color: #7ec47e; }
+.fp-meal-card__header--lunch     { background: #f0f6fc; border-bottom-color: #72aee6; }
+.fp-meal-card__header--snack2    { background: #f7f0fb; border-bottom-color: #c597d4; }
+.fp-meal-card__header--dinner    { background: #fef0f0; border-bottom-color: #e07070; }
+
+.fp-meal-card__label {
+	font-weight: 700;
+	font-size: 14px;
+}
+
+.fp-meal-card__body {
+	padding: 14px 16px;
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+}
+
+/* Macros row */
+.fp-macros-row {
+	display: flex;
+	gap: 10px;
+	flex-wrap: wrap;
+}
+
+.fp-macro-field {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	flex: 1;
+	min-width: 90px;
+}
+
+.fp-macro-field label {
+	font-weight: 600;
+	font-size: 12px;
+	color: #50575e;
+}
+
+.fp-macro-input-wrap {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+}
+
+.fp-macro-input-wrap input[type="number"] {
+	width: 100%;
+	padding: 6px 8px;
+	border: 1px solid #c3c4c7;
+	border-radius: 4px;
+	font-family: inherit;
+	font-size: 13px;
+	color: #1d2327;
+	transition: border-color 0.15s ease;
+}
+
+.fp-macro-input-wrap input[type="number"]:focus {
+	border-color: #2271b1;
+	outline: none;
+	box-shadow: 0 0 0 2px rgba(34, 113, 177, 0.15);
+}
+
+.fp-unit {
+	font-size: 11px;
+	color: #8c8f94;
+	flex-shrink: 0;
+}
+
+/* ── Macro totals bar (computed by JS) ──────────────────────── */
+.fp-macro-totals {
+	display: flex;
+	gap: 16px;
+	padding: 8px 12px;
+	background: #f6f7f7;
+	border: 1px solid #e5e5e5;
+	border-radius: 6px;
+	font-size: 12px;
+	font-weight: 600;
+	flex-wrap: wrap;
+}
+
+.fp-macro-totals__item span:first-child {
+	color: #50575e;
+	font-weight: 400;
+	margin-left: 4px;
+}
