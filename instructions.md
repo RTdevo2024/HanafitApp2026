@@ -135,10 +135,28 @@ This is **FitnessPro System** — a WordPress plugin providing an RTL-compatible
 
 ---
 
+## [2026-04-18] — Prompt 4 - Part 1: Checkout Flow UI Shell & CSS
+
+- **Action:** Built the PHP shortcode shell class and full CSS for the 6-step mobile-app-style checkout flow. No JS or step HTML content yet.
+- **Files Created:**
+  - `public/class-fitnesspro-checkout-ui.php` — `FitnessPro_Checkout_UI`: shortcode `[fitness_checkout_flow]`; `maybe_enqueue_assets()` with `has_shortcode()` guard; `render()` outputs `#fitness-app-container` with all data-* attributes (nonce, ajax-url, logged-in, start-step, total-steps, plan-map, goals, activities, diseases, eating-dis); PHP fallback defaults for empty goals/activities lists.
+  - `assets/css/checkout-flow.css` — Full dark mode glassmorphism CSS: CSS custom properties (--fco-neon `#00FF39`, --fco-bg `#121212`), step active/exiting transitions with `@keyframes fco-fade-up / fco-fade-out`, glassmorphism cards (backdrop-filter), form inputs, gender toggle, chip multi-select, activity level cards, plan selection cards, BMI panel + gauge, auth tabs (login/register), summary review rows, primary neon + ghost back navigation buttons, spinner, notice banners, mobile-first responsive breakpoints, desktop centred-card layout at 768px+.
+- **Files Modified:**
+  - `hanafit-app.php` — Added `require_once` for `public/class-fitnesspro-checkout-ui.php`.
+  - `includes/class-fitnesspro-core.php` — `define_public_hooks()` now instantiates `FitnessPro_Checkout_UI` and wires `init → register_shortcode` and `wp_enqueue_scripts → maybe_enqueue_assets`.
+- **Key Decisions:**
+  - JS (`fitnesspro-checkout-flow` script) intentionally left commented-out in `do_enqueue()` — added in Part 2 alongside the HTML step content.
+  - Step visibility managed with CSS classes only (`.fco-step`, `.is-active`, `.is-exiting`) — no `display:none` toggling from JS avoids FOUC.
+  - Desktop breakpoint wraps `.fco-inner` in a glassmorphism card (max-width 480px, border, border-radius) — mobile gets full-screen treatment.
+  - All step HTML and the `FitnessProCheckoutFlow` JS controller deferred to Part 2.
+
+---
+
 # Next Steps
 
-1. **Plan Assignment** — Admin form to assign `workout_template` / `meal_template` to a user from the orders screen → INSERT `wp_fitness_user_plans` + copy template JSON to `wp_fitness_active_content`; include coach selector using the coach role.
-2. **WooCommerce Integration** — Hook `woocommerce_order_status_completed` → check `fitnesspro_product_map` → auto-create pending plan row in `wp_fitness_user_plans` linked to `order_id`.
-3. **Frontend Dashboard** — Shortcode `[fitnesspro_dashboard]` showing active plans from `wp_fitness_active_content` with RTL day/meal layout.
-4. **Daily Progress Tracker** — AJAX endpoint for users to mark exercises complete; writes `completed_json` to `wp_fitness_daily_progress`.
-5. **Ticket System** — AJAX messaging into `wp_fitness_tickets`; coach and client views with attachment upload.
+1. **Phase 4 - Part 2** — 6-step HTML content injected/rendered by JS: Step 1 Auth (login/register tabs), Step 2 Body Data (height/weight/age/gender), Step 3 Goals (chip multi-select), Step 4 Health (diseases + eating disorders chips), Step 5 Activity Level (activity cards), Step 6 Summary + WC cart redirect. Vanilla JS `FitnessProCheckoutFlow` class controller; AJAX handlers for login/register/save-profile-data; Transient API for body data storage between steps.
+2. **Plan Assignment** — Admin form to assign `workout_template` / `meal_template` to a user from the orders screen → INSERT `wp_fitness_user_plans` + copy template JSON to `wp_fitness_active_content`; include coach selector using the coach role.
+3. **WooCommerce Integration** — Hook `woocommerce_order_status_completed` → check `fitnesspro_product_map` → auto-create pending plan row in `wp_fitness_user_plans` linked to `order_id`.
+4. **Frontend Dashboard** — Shortcode `[fitnesspro_dashboard]` showing active plans from `wp_fitness_active_content` with RTL day/meal layout.
+5. **Daily Progress Tracker** — AJAX endpoint for users to mark exercises complete; writes `completed_json` to `wp_fitness_daily_progress`.
+6. **Ticket System** — AJAX messaging into `wp_fitness_tickets`; coach and client views with attachment upload.

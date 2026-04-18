@@ -77,6 +77,10 @@ class FitnessPro_Core {
 		$public = new FitnessPro_Public( $this->version );
 		$this->loader->add_action( 'wp_enqueue_scripts', $public, 'enqueue_styles' );
 		$this->loader->add_action( 'wp_enqueue_scripts', $public, 'enqueue_scripts' );
+
+		$checkout_ui = new FitnessPro_Checkout_UI( $this->version );
+		$this->loader->add_action( 'init',              $checkout_ui, 'register_shortcode' );
+		$this->loader->add_action( 'wp_enqueue_scripts', $checkout_ui, 'maybe_enqueue_assets' );
 	}
 
 	private function define_role_hooks() {

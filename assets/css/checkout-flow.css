@@ -1,0 +1,862 @@
+/*
+ * FitnessPro — Checkout Flow Stylesheet
+ * Mobile-first · Dark Mode · Glassmorphism · RTL · Neon Green accent
+ *
+ * BEM-like class prefix: fco-  (fitness checkout)
+ * Step transitions: .fco-step (hidden) → .fco-step.is-active (visible) → .fco-step.is-exiting (leaving)
+ */
+
+/* ─── Custom Properties ──────────────────────────────────────────────────── */
+
+#fitness-app-container {
+	--fco-neon:          #00FF39;
+	--fco-neon-dim:      rgba(0, 255, 57, 0.15);
+	--fco-neon-glow:     rgba(0, 255, 57, 0.35);
+	--fco-bg:            #121212;
+	--fco-surface:       rgba(255, 255, 255, 0.06);
+	--fco-surface-hover: rgba(255, 255, 255, 0.10);
+	--fco-border:        rgba(255, 255, 255, 0.10);
+	--fco-border-accent: rgba(0, 255, 57, 0.40);
+	--fco-text:          #F0F0F0;
+	--fco-text-muted:    #8A8A8A;
+	--fco-text-dimmed:   #5C5C5C;
+	--fco-error:         #FF4D4D;
+	--fco-warning:       #FFB800;
+	--fco-radius-sm:     8px;
+	--fco-radius-md:     14px;
+	--fco-radius-lg:     20px;
+	--fco-radius-xl:     28px;
+	--fco-blur:          blur(16px);
+	--fco-blur-sm:       blur(8px);
+	--fco-shadow:        0 8px 32px rgba(0, 0, 0, 0.45);
+	--fco-shadow-neon:   0 0 20px rgba(0, 255, 57, 0.25);
+	--fco-duration:      0.35s;
+	--fco-ease:          cubic-bezier(0.22, 0.61, 0.36, 1);
+	--fco-font:          'Yekan Bakh', 'Vazirmatn', Tahoma, Arial, sans-serif;
+}
+
+/* ─── Root Container ─────────────────────────────────────────────────────── */
+
+#fitness-app-container {
+	direction:       rtl;
+	font-family:     var(--fco-font);
+	background:      var(--fco-bg);
+	color:           var(--fco-text);
+	min-height:      100vh;
+	width:           100%;
+	display:         flex;
+	align-items:     flex-start;
+	justify-content: center;
+	padding:         0;
+	margin:          0;
+	box-sizing:      border-box;
+}
+
+/* ─── Inner Wrapper ──────────────────────────────────────────────────────── */
+
+.fco-inner {
+	width:      100%;
+	max-width:  480px;
+	min-height: 100vh;
+	display:    flex;
+	flex-direction: column;
+	padding:    0 0 40px;
+	box-sizing: border-box;
+}
+
+/* ─── Header: Brand + Progress + Counter ─────────────────────────────────── */
+
+.fco-header {
+	position:        sticky;
+	top:             0;
+	z-index:         100;
+	background:      rgba(18, 18, 18, 0.85);
+	backdrop-filter: var(--fco-blur);
+	-webkit-backdrop-filter: var(--fco-blur);
+	border-bottom:   1px solid var(--fco-border);
+	padding:         14px 20px 10px;
+	display:         flex;
+	align-items:     center;
+	gap:             12px;
+}
+
+.fco-brand {
+	display:     flex;
+	align-items: center;
+	gap:         6px;
+	flex-shrink: 0;
+}
+
+.fco-brand__icon {
+	display:       inline-block;
+	width:         22px;
+	height:        22px;
+	background:    var(--fco-neon);
+	mask-image:    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z'/%3E%3C/svg%3E");
+	mask-size:     contain;
+	mask-repeat:   no-repeat;
+	-webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z'/%3E%3C/svg%3E");
+	-webkit-mask-size:   contain;
+	-webkit-mask-repeat: no-repeat;
+}
+
+.fco-brand__name {
+	font-size:   13px;
+	font-weight: 700;
+	color:       var(--fco-neon);
+	letter-spacing: 0.01em;
+}
+
+.fco-progress-wrap {
+	flex:     1;
+	overflow: hidden;
+}
+
+.fco-progress-track {
+	background:    rgba(255, 255, 255, 0.10);
+	border-radius: 100px;
+	height:        4px;
+	overflow:      hidden;
+}
+
+.fco-progress-fill {
+	height:           100%;
+	width:            0%;
+	background:       linear-gradient(90deg, var(--fco-neon), #00c82e);
+	border-radius:    100px;
+	transition:       width var(--fco-duration) var(--fco-ease);
+	box-shadow:       0 0 8px var(--fco-neon-glow);
+}
+
+.fco-step-counter {
+	flex-shrink: 0;
+	display:     flex;
+	align-items: center;
+	gap:         3px;
+	font-size:   12px;
+	color:       var(--fco-text-muted);
+}
+
+.fco-step-current {
+	color:       var(--fco-neon);
+	font-weight: 700;
+	font-size:   14px;
+}
+
+/* ─── Steps Wrapper ──────────────────────────────────────────────────────── */
+
+.fco-steps-wrapper {
+	flex:    1;
+	padding: 24px 20px 0;
+	position: relative;
+	overflow: hidden;
+}
+
+/* ─── Individual Step ────────────────────────────────────────────────────── */
+
+.fco-step {
+	display:    none;
+	opacity:    0;
+	position:   absolute;
+	top:        0;
+	right:      0;
+	left:       0;
+	padding:    0 20px;
+}
+
+.fco-step.is-active {
+	display:   block;
+	opacity:   1;
+	position:  relative;
+	animation: fco-fade-up var(--fco-duration) var(--fco-ease) both;
+}
+
+.fco-step.is-exiting {
+	display:   block;
+	position:  absolute;
+	top:       0;
+	right:     0;
+	left:      0;
+	animation: fco-fade-out var(--fco-duration) var(--fco-ease) both;
+	pointer-events: none;
+}
+
+@keyframes fco-fade-up {
+	from {
+		opacity:   0;
+		transform: translateY(18px);
+	}
+	to {
+		opacity:   1;
+		transform: translateY(0);
+	}
+}
+
+@keyframes fco-fade-out {
+	from {
+		opacity:   1;
+		transform: translateY(0);
+	}
+	to {
+		opacity:   0;
+		transform: translateY(-12px);
+	}
+}
+
+/* ─── Step Header ────────────────────────────────────────────────────────── */
+
+.fco-step-title {
+	font-size:      22px;
+	font-weight:    800;
+	color:          var(--fco-text);
+	margin:         0 0 6px;
+	line-height:    1.3;
+}
+
+.fco-step-subtitle {
+	font-size:   14px;
+	color:       var(--fco-text-muted);
+	margin:      0 0 28px;
+	line-height: 1.6;
+}
+
+/* ─── Glassmorphism Card ─────────────────────────────────────────────────── */
+
+.fco-card {
+	background:      var(--fco-surface);
+	backdrop-filter: var(--fco-blur-sm);
+	-webkit-backdrop-filter: var(--fco-blur-sm);
+	border:          1px solid var(--fco-border);
+	border-radius:   var(--fco-radius-lg);
+	padding:         20px;
+	margin-bottom:   16px;
+}
+
+.fco-card--accent {
+	border-color: var(--fco-border-accent);
+	box-shadow:   0 0 18px var(--fco-neon-dim);
+}
+
+/* ─── Form Fields ────────────────────────────────────────────────────────── */
+
+.fco-field {
+	margin-bottom: 18px;
+}
+
+.fco-label {
+	display:       block;
+	font-size:     13px;
+	font-weight:   600;
+	color:         var(--fco-text-muted);
+	margin-bottom: 8px;
+}
+
+.fco-input,
+.fco-select {
+	width:            100%;
+	background:       rgba(255, 255, 255, 0.06);
+	border:           1px solid var(--fco-border);
+	border-radius:    var(--fco-radius-md);
+	color:            var(--fco-text);
+	font-family:      var(--fco-font);
+	font-size:        15px;
+	padding:          13px 16px;
+	box-sizing:       border-box;
+	transition:       border-color var(--fco-duration) var(--fco-ease),
+	                  box-shadow   var(--fco-duration) var(--fco-ease);
+	outline:          none;
+	-webkit-appearance: none;
+	appearance:       none;
+}
+
+.fco-input::placeholder {
+	color: var(--fco-text-dimmed);
+}
+
+.fco-input:focus,
+.fco-select:focus {
+	border-color: var(--fco-neon);
+	box-shadow:   0 0 0 3px var(--fco-neon-dim);
+}
+
+.fco-input.has-error,
+.fco-select.has-error {
+	border-color: var(--fco-error);
+	box-shadow:   0 0 0 3px rgba(255, 77, 77, 0.15);
+}
+
+.fco-select {
+	background-image:    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238A8A8A' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+	background-repeat:   no-repeat;
+	background-position: left 16px center;
+	padding-left:        40px;
+}
+
+.fco-input-row {
+	display: flex;
+	gap:     10px;
+}
+
+.fco-input-row .fco-field {
+	flex:         1;
+	margin-bottom: 0;
+}
+
+/* ─── Inline Field Error ─────────────────────────────────────────────────── */
+
+.fco-field-error {
+	font-size:   12px;
+	color:       var(--fco-error);
+	margin-top:  5px;
+	display:     none;
+	line-height: 1.4;
+}
+
+.fco-field-error.is-visible {
+	display: block;
+}
+
+/* ─── Gender Toggle ──────────────────────────────────────────────────────── */
+
+.fco-gender-row {
+	display: flex;
+	gap:     10px;
+}
+
+.fco-gender-btn {
+	flex:          1;
+	background:    var(--fco-surface);
+	border:        1px solid var(--fco-border);
+	border-radius: var(--fco-radius-md);
+	color:         var(--fco-text-muted);
+	font-family:   var(--fco-font);
+	font-size:     14px;
+	font-weight:   600;
+	padding:       14px 10px;
+	cursor:        pointer;
+	transition:    border-color var(--fco-duration) var(--fco-ease),
+	               color        var(--fco-duration) var(--fco-ease),
+	               background   var(--fco-duration) var(--fco-ease);
+	text-align:    center;
+}
+
+.fco-gender-btn.is-selected {
+	border-color: var(--fco-neon);
+	color:        var(--fco-neon);
+	background:   var(--fco-neon-dim);
+}
+
+/* ─── Chip Multi-Select ──────────────────────────────────────────────────── */
+
+.fco-chips {
+	display:   flex;
+	flex-wrap: wrap;
+	gap:       10px;
+	margin:    0 0 4px;
+}
+
+.fco-chip {
+	background:    var(--fco-surface);
+	border:        1px solid var(--fco-border);
+	border-radius: 100px;
+	color:         var(--fco-text-muted);
+	font-family:   var(--fco-font);
+	font-size:     13px;
+	padding:       8px 16px;
+	cursor:        pointer;
+	user-select:   none;
+	transition:    border-color var(--fco-duration) var(--fco-ease),
+	               color        var(--fco-duration) var(--fco-ease),
+	               background   var(--fco-duration) var(--fco-ease),
+	               box-shadow   var(--fco-duration) var(--fco-ease);
+}
+
+.fco-chip.is-selected {
+	border-color: var(--fco-neon);
+	color:        var(--fco-neon);
+	background:   var(--fco-neon-dim);
+	box-shadow:   0 0 8px var(--fco-neon-dim);
+}
+
+/* ─── Activity Level Cards ───────────────────────────────────────────────── */
+
+.fco-activity-grid {
+	display:               grid;
+	grid-template-columns: 1fr 1fr;
+	gap:                   10px;
+}
+
+.fco-activity-card {
+	background:    var(--fco-surface);
+	border:        1px solid var(--fco-border);
+	border-radius: var(--fco-radius-md);
+	padding:       14px 12px;
+	cursor:        pointer;
+	text-align:    center;
+	transition:    border-color var(--fco-duration) var(--fco-ease),
+	               background   var(--fco-duration) var(--fco-ease),
+	               box-shadow   var(--fco-duration) var(--fco-ease);
+	user-select:   none;
+}
+
+.fco-activity-card__icon {
+	font-size:     24px;
+	display:       block;
+	margin-bottom: 8px;
+}
+
+.fco-activity-card__label {
+	font-size:   13px;
+	font-weight: 600;
+	color:       var(--fco-text-muted);
+	transition:  color var(--fco-duration) var(--fco-ease);
+}
+
+.fco-activity-card.is-selected {
+	border-color: var(--fco-neon);
+	background:   var(--fco-neon-dim);
+	box-shadow:   0 0 14px var(--fco-neon-dim);
+}
+
+.fco-activity-card.is-selected .fco-activity-card__label {
+	color: var(--fco-neon);
+}
+
+/* ─── Plan Selection Cards ───────────────────────────────────────────────── */
+
+.fco-plan-grid {
+	display:               grid;
+	grid-template-columns: 1fr 1fr;
+	gap:                   14px;
+}
+
+.fco-plan-card {
+	background:      var(--fco-surface);
+	backdrop-filter: var(--fco-blur-sm);
+	-webkit-backdrop-filter: var(--fco-blur-sm);
+	border:          2px solid var(--fco-border);
+	border-radius:   var(--fco-radius-lg);
+	padding:         22px 14px 18px;
+	cursor:          pointer;
+	text-align:      center;
+	transition:      border-color var(--fco-duration) var(--fco-ease),
+	                 box-shadow   var(--fco-duration) var(--fco-ease);
+	user-select:     none;
+	position:        relative;
+}
+
+.fco-plan-card__icon {
+	font-size:     36px;
+	display:       block;
+	margin-bottom: 12px;
+}
+
+.fco-plan-card__name {
+	font-size:     15px;
+	font-weight:   700;
+	color:         var(--fco-text);
+	margin-bottom: 6px;
+}
+
+.fco-plan-card__desc {
+	font-size:   12px;
+	color:       var(--fco-text-muted);
+	line-height: 1.5;
+}
+
+.fco-plan-card__badge {
+	position:      absolute;
+	top:           -10px;
+	right:         50%;
+	transform:     translateX(50%);
+	background:    var(--fco-neon);
+	color:         #000;
+	font-size:     10px;
+	font-weight:   800;
+	border-radius: 100px;
+	padding:       3px 10px;
+	white-space:   nowrap;
+}
+
+.fco-plan-card.is-selected {
+	border-color: var(--fco-neon);
+	box-shadow:   var(--fco-shadow-neon), 0 0 0 3px var(--fco-neon-dim) inset;
+}
+
+/* ─── BMI Display Panel ──────────────────────────────────────────────────── */
+
+.fco-bmi-panel {
+	background:    var(--fco-surface);
+	border:        1px solid var(--fco-border);
+	border-radius: var(--fco-radius-lg);
+	padding:       22px 20px;
+	text-align:    center;
+	margin-bottom: 20px;
+}
+
+.fco-bmi-value {
+	font-size:   48px;
+	font-weight: 900;
+	color:       var(--fco-neon);
+	line-height: 1;
+	margin:      0 0 4px;
+	text-shadow: 0 0 20px var(--fco-neon-glow);
+}
+
+.fco-bmi-label {
+	font-size:   12px;
+	color:       var(--fco-text-muted);
+	margin:      0 0 16px;
+}
+
+.fco-bmi-gauge {
+	background:    rgba(255, 255, 255, 0.08);
+	border-radius: 100px;
+	height:        6px;
+	overflow:      hidden;
+	position:      relative;
+	margin-bottom: 8px;
+}
+
+.fco-bmi-gauge__fill {
+	height:        100%;
+	border-radius: 100px;
+	transition:    width 0.6s var(--fco-ease), background 0.3s;
+}
+
+.fco-bmi-gauge__fill--underweight { background: #4DA6FF; }
+.fco-bmi-gauge__fill--normal      { background: var(--fco-neon); }
+.fco-bmi-gauge__fill--overweight  { background: var(--fco-warning); }
+.fco-bmi-gauge__fill--obese       { background: var(--fco-error); }
+
+.fco-bmi-category {
+	font-size:   13px;
+	font-weight: 700;
+	margin-top:  8px;
+}
+
+.fco-bmi-category--underweight { color: #4DA6FF; }
+.fco-bmi-category--normal      { color: var(--fco-neon); }
+.fco-bmi-category--overweight  { color: var(--fco-warning); }
+.fco-bmi-category--obese       { color: var(--fco-error); }
+
+/* ─── Auth Tabs (Login / Register) ──────────────────────────────────────── */
+
+.fco-auth-tabs {
+	display:       flex;
+	background:    rgba(255, 255, 255, 0.04);
+	border:        1px solid var(--fco-border);
+	border-radius: var(--fco-radius-md);
+	padding:       4px;
+	margin-bottom: 24px;
+}
+
+.fco-auth-tab {
+	flex:          1;
+	background:    transparent;
+	border:        none;
+	border-radius: var(--fco-radius-sm);
+	color:         var(--fco-text-muted);
+	font-family:   var(--fco-font);
+	font-size:     14px;
+	font-weight:   600;
+	padding:       10px 14px;
+	cursor:        pointer;
+	transition:    background var(--fco-duration) var(--fco-ease),
+	               color      var(--fco-duration) var(--fco-ease);
+}
+
+.fco-auth-tab.is-active {
+	background: var(--fco-neon);
+	color:      #000;
+}
+
+.fco-auth-panel {
+	display: none;
+}
+
+.fco-auth-panel.is-active {
+	display: block;
+}
+
+/* ─── Summary Review Rows ────────────────────────────────────────────────── */
+
+.fco-summary-row {
+	display:         flex;
+	align-items:     center;
+	justify-content: space-between;
+	padding:         13px 0;
+	border-bottom:   1px solid var(--fco-border);
+}
+
+.fco-summary-row:last-child {
+	border-bottom: none;
+}
+
+.fco-summary-row__key {
+	font-size: 13px;
+	color:     var(--fco-text-muted);
+}
+
+.fco-summary-row__val {
+	font-size:   14px;
+	font-weight: 700;
+	color:       var(--fco-text);
+	text-align:  left;
+}
+
+.fco-summary-row__val--accent {
+	color: var(--fco-neon);
+}
+
+/* ─── Navigation Buttons ─────────────────────────────────────────────────── */
+
+.fco-nav {
+	display:    flex;
+	gap:        10px;
+	margin-top: 28px;
+	padding:    0;
+}
+
+.fco-btn {
+	border:        none;
+	border-radius: var(--fco-radius-md);
+	font-family:   var(--fco-font);
+	font-size:     15px;
+	font-weight:   700;
+	padding:       15px 24px;
+	cursor:        pointer;
+	transition:    background   var(--fco-duration) var(--fco-ease),
+	               box-shadow   var(--fco-duration) var(--fco-ease),
+	               opacity      var(--fco-duration) var(--fco-ease),
+	               transform    0.15s var(--fco-ease);
+	outline:       none;
+	user-select:   none;
+	-webkit-tap-highlight-color: transparent;
+}
+
+.fco-btn:active {
+	transform: scale(0.97);
+}
+
+.fco-btn:disabled {
+	opacity: 0.4;
+	cursor:  not-allowed;
+	transform: none;
+}
+
+/* Primary — neon green CTA */
+.fco-btn--primary {
+	flex:       1;
+	background: var(--fco-neon);
+	color:      #000000;
+	box-shadow: 0 4px 18px var(--fco-neon-glow);
+}
+
+.fco-btn--primary:hover:not(:disabled) {
+	background: #1aff4d;
+	box-shadow: 0 6px 24px var(--fco-neon-glow);
+}
+
+/* Secondary — ghost back button */
+.fco-btn--secondary {
+	background:  transparent;
+	border:      1px solid var(--fco-border);
+	color:       var(--fco-text-muted);
+	flex-shrink: 0;
+	min-width:   90px;
+}
+
+.fco-btn--secondary:hover:not(:disabled) {
+	border-color: var(--fco-text-muted);
+	color:        var(--fco-text);
+}
+
+/* Full-width override */
+.fco-btn--full {
+	width: 100%;
+}
+
+/* Spinner-inside-button state */
+.fco-btn--loading {
+	pointer-events: none;
+	opacity:        0.75;
+}
+
+.fco-btn--loading::after {
+	content:       '';
+	display:       inline-block;
+	width:         14px;
+	height:        14px;
+	border:        2px solid rgba(0, 0, 0, 0.3);
+	border-top-color: #000;
+	border-radius: 50%;
+	animation:     fco-spin 0.7s linear infinite;
+	margin-right:  8px;
+	vertical-align: middle;
+}
+
+/* ─── Spinner (Init + Loading) ───────────────────────────────────────────── */
+
+.fco-init-spinner {
+	display:         flex;
+	flex-direction:  column;
+	align-items:     center;
+	justify-content: center;
+	padding:         60px 20px;
+	gap:             16px;
+}
+
+.fco-spinner {
+	width:         40px;
+	height:        40px;
+	border:        3px solid rgba(0, 255, 57, 0.15);
+	border-top:    3px solid var(--fco-neon);
+	border-radius: 50%;
+	animation:     fco-spin 0.8s linear infinite;
+}
+
+.fco-spinner-text {
+	font-size: 13px;
+	color:     var(--fco-text-muted);
+	margin:    0;
+}
+
+@keyframes fco-spin {
+	to { transform: rotate(360deg); }
+}
+
+/* ─── Notice / Alert Banner ──────────────────────────────────────────────── */
+
+.fco-notice {
+	border-radius: var(--fco-radius-md);
+	padding:       13px 16px;
+	font-size:     13px;
+	line-height:   1.55;
+	margin-bottom: 16px;
+	display:       none;
+}
+
+.fco-notice.is-visible {
+	display: block;
+}
+
+.fco-notice--error {
+	background: rgba(255, 77, 77, 0.10);
+	border:     1px solid rgba(255, 77, 77, 0.30);
+	color:      #FF7A7A;
+}
+
+.fco-notice--success {
+	background: rgba(0, 255, 57, 0.08);
+	border:     1px solid rgba(0, 255, 57, 0.25);
+	color:      var(--fco-neon);
+}
+
+.fco-notice--info {
+	background: rgba(77, 166, 255, 0.08);
+	border:     1px solid rgba(77, 166, 255, 0.25);
+	color:      #7EC8FF;
+}
+
+/* ─── Noscript Message ───────────────────────────────────────────────────── */
+
+.fco-noscript-msg {
+	text-align:    center;
+	padding:       40px 20px;
+	color:         var(--fco-text-muted);
+	font-size:     14px;
+	border:        1px dashed var(--fco-border);
+	border-radius: var(--fco-radius-lg);
+}
+
+/* ─── Divider ────────────────────────────────────────────────────────────── */
+
+.fco-divider {
+	display:      flex;
+	align-items:  center;
+	gap:          10px;
+	margin:       20px 0;
+	color:        var(--fco-text-dimmed);
+	font-size:    12px;
+}
+
+.fco-divider::before,
+.fco-divider::after {
+	content:    '';
+	flex:       1;
+	height:     1px;
+	background: var(--fco-border);
+}
+
+/* ─── Password Toggle ────────────────────────────────────────────────────── */
+
+.fco-field--password {
+	position: relative;
+}
+
+.fco-field--password .fco-input {
+	padding-left: 44px;
+}
+
+.fco-pass-toggle {
+	position:   absolute;
+	bottom:     0;
+	left:       0;
+	height:     100%;
+	width:      44px;
+	background: transparent;
+	border:     none;
+	cursor:     pointer;
+	display:    flex;
+	align-items: center;
+	justify-content: center;
+	color:      var(--fco-text-dimmed);
+	transition: color var(--fco-duration);
+}
+
+.fco-pass-toggle:hover {
+	color: var(--fco-text-muted);
+}
+
+/* ─── Responsive: narrow phones ──────────────────────────────────────────── */
+
+@media (max-width: 360px) {
+	.fco-steps-wrapper {
+		padding: 20px 14px 0;
+	}
+
+	.fco-plan-grid,
+	.fco-activity-grid {
+		grid-template-columns: 1fr;
+	}
+
+	.fco-step-title {
+		font-size: 19px;
+	}
+}
+
+/* ─── Responsive: desktop (wider than 480px acts as centred card) ────────── */
+
+@media (min-width: 768px) {
+	#fitness-app-container {
+		align-items: center;
+		padding:     40px 20px;
+		min-height:  100vh;
+	}
+
+	.fco-inner {
+		min-height:    unset;
+		border:        1px solid var(--fco-border);
+		border-radius: var(--fco-radius-xl);
+		background:    rgba(18, 18, 18, 0.92);
+		backdrop-filter: var(--fco-blur);
+		-webkit-backdrop-filter: var(--fco-blur);
+		box-shadow:    var(--fco-shadow);
+		padding-bottom: 32px;
+	}
+
+	.fco-header {
+		border-radius: var(--fco-radius-xl) var(--fco-radius-xl) 0 0;
+	}
+}
