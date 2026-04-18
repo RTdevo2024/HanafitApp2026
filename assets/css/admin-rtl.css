@@ -1,0 +1,47 @@
+/* FitnessPro — Admin RTL Stylesheet */
+
+.fitnesspro-wrap {
+	direction: rtl;
+	text-align: right;
+	font-family: 'Vazirmatn', Tahoma, Arial, sans-serif;
+}
+
+.fitnesspro-wrap h1,
+.fitnesspro-wrap h2,
+.fitnesspro-wrap h3 {
+	font-weight: 700;
+	color: #1d2327;
+}
+
+/* Flip WP default button margins for RTL */
+.fitnesspro-wrap .button,
+.fitnesspro-wrap .button-primary,
+.fitnesspro-wrap .button-secondary {
+	margin-left: 0;
+	margin-right: 4px;
+}
+
+/* Notice alignment */
+.fitnesspro-wrap .notice {
+	direction: rtl;
+	text-align: right;
+}
+
+/* Table overrides */
+.fitnesspro-wrap table.wp-list-table th,
+.fitnesspro-wrap table.wp-list-table td {
+	text-align: right;
+}
+
+/* Status badges */
+.fitnesspro-badge {
+	display: inline-block;
+	padding: 2px 10px;
+	border-radius: 10px;
+	font-size: 12px;
+	font-weight: 600;
+}
+
+.fitnesspro-badge--active   { background: #d4edda; color: #155724; }
+.fitnesspro-badge--expired  { background: #f8d7da; color: #721c24; }
+.fitnesspro-badge--pending  { background: #fff3cd; color: #856404; }

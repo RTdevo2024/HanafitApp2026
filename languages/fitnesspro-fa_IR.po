@@ -1,0 +1,50 @@
+# FitnessPro System — Persian (fa_IR) translations
+# Copyright (C) 2026 RTdevo2024
+# This file is distributed under the same license as the FitnessPro System plugin.
+msgid ""
+msgstr ""
+"Project-Id-Version: FitnessPro System 1.0.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-04-18\n"
+"PO-Revision-Date: 2026-04-18\n"
+"Language: fa_IR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgid "مربی فیتنس"
+msgstr "مربی فیتنس"
+
+msgid "سیستم فیتنس‌پرو:"
+msgstr "سیستم فیتنس‌پرو:"
+
+msgid "افزونه ووکامرس فعال نیست. برای استفاده از تمام قابلیت‌های این افزونه، لطفاً ووکامرس را نصب و فعال کنید."
+msgstr "افزونه ووکامرس فعال نیست. برای استفاده از تمام قابلیت‌های این افزونه، لطفاً ووکامرس را نصب و فعال کنید."
+
+msgid "فیتنس‌پرو"
+msgstr "فیتنس‌پرو"
+
+msgid "داشبورد مربی"
+msgstr "داشبورد مربی"
+
+msgid "داشبورد فیتنس‌پرو"
+msgstr "داشبورد فیتنس‌پرو"
+
+msgid "به پنل مدیریت سیستم فیتنس‌پرو خوش آمدید."
+msgstr "به پنل مدیریت سیستم فیتنس‌پرو خوش آمدید."
+
+msgid "پنل اختصاصی مربی فیتنس — برنامه‌ها و پیام‌های شما اینجا نمایش داده می‌شوند."
+msgstr "پنل اختصاصی مربی فیتنس — برنامه‌ها و پیام‌های شما اینجا نمایش داده می‌شوند."
+
+msgid "آیا از حذف این مورد مطمئن هستید؟"
+msgstr "آیا از حذف این مورد مطمئن هستید؟"
+
+msgid "در حال بارگذاری..."
+msgstr "در حال بارگذاری..."
+
+msgid "خطایی رخ داد. لطفاً دوباره تلاش کنید."
+msgstr "خطایی رخ داد. لطفاً دوباره تلاش کنید."
+
+msgid "عملیات با موفقیت انجام شد."
+msgstr "عملیات با موفقیت انجام شد."
