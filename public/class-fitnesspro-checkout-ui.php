@@ -70,16 +70,26 @@ class FitnessPro_Checkout_UI {
 	}
 
 	private function do_login() {
-		$email    = isset( $_POST['email'] )    ? sanitize_email( wp_unslash( $_POST['email'] ) )         : '';
-		$password = isset( $_POST['password'] ) ? wp_unslash( $_POST['password'] )                        : '';
+		$identifier = isset( $_POST['identifier'] ) ? sanitize_text_field( wp_unslash( $_POST['identifier'] ) ) : '';
+		$password   = isset( $_POST['password'] )   ? wp_unslash( $_POST['password'] )                          : '';
 
-		if ( empty( $email ) || empty( $password ) ) {
-			wp_send_json_error( array( 'message' => __( 'ایمیل و رمز عبور الزامی است.', 'fitnesspro' ) ) );
+		if ( empty( $identifier ) || empty( $password ) ) {
+			wp_send_json_error( array( 'message' => __( 'ایمیل/موبایل و رمز عبور الزامی است.', 'fitnesspro' ) ) );
 		}
 
-		$user = get_user_by( 'email', $email );
+		// Try by email first, then fall back to fp_phone user meta
+		$user = is_email( $identifier ) ? get_user_by( 'email', $identifier ) : null;
 		if ( ! $user ) {
-			wp_send_json_error( array( 'message' => __( 'کاربری با این ایمیل یافت نشد.', 'fitnesspro' ) ) );
+			$found = get_users( array(
+				'meta_key'   => 'fp_phone',
+				'meta_value' => $identifier,
+				'number'     => 1,
+			) );
+			$user = ! empty( $found ) ? $found[0] : null;
+		}
+
+		if ( ! $user ) {
+			wp_send_json_error( array( 'message' => __( 'کاربری با این مشخصات یافت نشد.', 'fitnesspro' ) ) );
 		}
 
 		$result = wp_authenticate( $user->user_login, $password );
@@ -393,10 +403,10 @@ class FitnessPro_Checkout_UI {
 
 						<div class="fco-auth-panel is-active" id="fco-panel-login" role="tabpanel">
 							<div class="fco-field">
-								<label class="fco-label" for="fco-login-email"><?php esc_html_e( 'ایمیل', 'fitnesspro' ); ?></label>
-								<input type="email" id="fco-login-email" class="fco-input"
-									autocomplete="email"
-									placeholder="<?php esc_attr_e( 'example@email.com', 'fitnesspro' ); ?>">
+								<label class="fco-label" for="fco-login-identifier"><?php esc_html_e( 'ایمیل یا شماره موبایل', 'fitnesspro' ); ?></label>
+								<input type="text" id="fco-login-identifier" class="fco-input"
+									autocomplete="username"
+									placeholder="<?php esc_attr_e( '09XXXXXXXXX یا example@email.com', 'fitnesspro' ); ?>">
 							</div>
 							<div class="fco-field fco-field--password">
 								<label class="fco-label" for="fco-login-password"><?php esc_html_e( 'رمز عبور', 'fitnesspro' ); ?></label>

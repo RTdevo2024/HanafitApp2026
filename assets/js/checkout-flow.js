@@ -147,6 +147,8 @@ class FitnessProCheckoutFlow {
 	// ─── Step Visibility ──────────────────────────────────────────────────────
 
 	_showStep( n, forward ) {
+		this._el.dataset.navDir = forward ? 'forward' : 'back';
+
 		const current = this._el.querySelector( '.fco-step.is-active' );
 		const next    = document.getElementById( 'fco-step-' + n );
 		if ( ! next ) return;
@@ -267,11 +269,21 @@ class FitnessProCheckoutFlow {
 		this._showNotice( notice, '', '' );
 		this._setBtnLoading( btn, true );
 
+		// Client-side password length guard (register only)
+		if ( ! isLogin ) {
+			const pass = document.getElementById( 'fco-reg-password' )?.value || '';
+			if ( pass.length < 8 ) {
+				this._showNotice( notice, 'error', 'رمز عبور باید حداقل ۸ کاراکتر باشد.' );
+				this._setBtnLoading( btn, false );
+				return;
+			}
+		}
+
 		const payload = { auth_action: action };
 
 		if ( isLogin ) {
-			payload.email    = document.getElementById( 'fco-login-email' )?.value.trim()  || '';
-			payload.password = document.getElementById( 'fco-login-password' )?.value      || '';
+			payload.identifier = document.getElementById( 'fco-login-identifier' )?.value.trim() || '';
+			payload.password   = document.getElementById( 'fco-login-password' )?.value          || '';
 		} else {
 			payload.first_name = document.getElementById( 'fco-reg-firstname' )?.value.trim() || '';
 			payload.last_name  = document.getElementById( 'fco-reg-lastname' )?.value.trim()  || '';
