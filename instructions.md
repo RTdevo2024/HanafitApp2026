@@ -53,7 +53,13 @@ This is **FitnessPro System** — a WordPress plugin providing an RTL-compatible
 
 | Meta Key | Description | Status |
 |---|---|---|
-| *(none yet)* | | |
+| `fp_phone` | Mobile phone number captured during checkout registration | ✅ Active |
+
+## Transients
+
+| Key Pattern | TTL | Description |
+|---|---|---|
+| `fp_checkout_profile_{user_id}` | 7200s (2h) | Sanitized profile data collected during checkout flow |
 
 ---
 
@@ -150,13 +156,30 @@ This is **FitnessPro System** — a WordPress plugin providing an RTL-compatible
   - Desktop breakpoint wraps `.fco-inner` in a glassmorphism card (max-width 480px, border, border-radius) — mobile gets full-screen treatment.
   - All step HTML and the `FitnessProCheckoutFlow` JS controller deferred to Part 2.
 
+## [2026-04-19] — Prompt 4 - Part 2: Full Checkout Flow (JS + AJAX + Step HTML)
+
+- **Action:** Completed the 6-step AJAX purchase flow — all step HTML server-rendered, Vanilla JS OOP controller, 3 AJAX handlers, BMI SVG arc gauge, WooCommerce cart redirect.
+- **Files Modified:**
+  - `public/class-fitnesspro-checkout-ui.php` — Complete rewrite: added `ajax_auth()` (dispatches `do_login()` / `do_register()`), `ajax_save_profile()` (transient TTL 2h), `ajax_add_to_cart()` (WC cart empty + add + redirect URL); `render()` now outputs full server-rendered HTML for all 6 steps; `do_enqueue()` now enqueues `checkout-flow.js`.
+  - `assets/js/checkout-flow.js` — New file: `FitnessProCheckoutFlow` OOP class; event delegation for next/back/pay/plan-card/chip/activity-card/gender/auth-tab/password-toggle; `_validate()` per-step; `_collect()` per-step; `_doAuth()` / `_doSaveProfile()` / `_doAddToCart()` async fetch helpers; `_renderBMI()` with SVG arc animation (arc length π×90≈282.74, range BMI 15–40); `_renderSummary()` fills summary card; `_showNotice()` / `_setBtnLoading()` / `_showStep()` / `_updateProgress()` UI helpers.
+  - `assets/css/checkout-flow.css` — Appended: `.fco-bmi-svg`, `.fco-bmi-arc-fill` transition, `.fco-bmi-stats` grid, `.fco-bmi-stat` / `__key` / `__val`, `.fco-section-label`, `.fco-plan-card--disabled`, `.fco-plan-card__unavailable`, `.fco-btn-pay`.
+  - `includes/class-fitnesspro-core.php` — Added 4 AJAX hooks in `define_public_hooks()`: `wp_ajax_nopriv_fp_cof_auth`, `wp_ajax_fp_cof_auth`, `wp_ajax_fp_cof_save_profile`, `wp_ajax_fp_cof_add_to_cart`.
+- **User Meta Keys Added:**
+  - `fp_phone` — stored on register; `set_transient('fp_checkout_profile_{user_id}', $clean, 7200)` — profile data TTL 2h.
+- **Key Decisions:**
+  - Step HTML is server-rendered (PHP), not JS-injected — avoids FOUC and keeps content available for screen readers.
+  - Auth step (step 1) rendered only for guests; `data-start-step` / `data-total-steps` drive JS progress math so logged-in users start at step 2 with correct 5-step progress.
+  - Nonce refreshed after AJAX auth: server calls `wp_set_current_user()` before `wp_create_nonce()`, JS updates `this._nonce` so subsequent calls use the fresh session nonce.
+  - `WC()->cart->empty_cart()` before `add_to_cart()` — ensures only the fitness plan product is checked out.
+  - BMI arc: semicircle path center (110,120) radius 90; arc length = π×90 ≈ 282.74; progress = clamp((bmi-15)/25, 0, 1); colour: `<18.5` → `#4DA6FF`, `18.5–25` → `#00FF39`, `25–30` → `#FFB800`, `≥30` → `#FF4D4D`.
+  - `_doSaveProfile()` is non-fatal — network error is swallowed so user still proceeds to step 6.
+
 ---
 
 # Next Steps
 
-1. **Phase 4 - Part 2** — 6-step HTML content injected/rendered by JS: Step 1 Auth (login/register tabs), Step 2 Body Data (height/weight/age/gender), Step 3 Goals (chip multi-select), Step 4 Health (diseases + eating disorders chips), Step 5 Activity Level (activity cards), Step 6 Summary + WC cart redirect. Vanilla JS `FitnessProCheckoutFlow` class controller; AJAX handlers for login/register/save-profile-data; Transient API for body data storage between steps.
-2. **Plan Assignment** — Admin form to assign `workout_template` / `meal_template` to a user from the orders screen → INSERT `wp_fitness_user_plans` + copy template JSON to `wp_fitness_active_content`; include coach selector using the coach role.
-3. **WooCommerce Integration** — Hook `woocommerce_order_status_completed` → check `fitnesspro_product_map` → auto-create pending plan row in `wp_fitness_user_plans` linked to `order_id`.
-4. **Frontend Dashboard** — Shortcode `[fitnesspro_dashboard]` showing active plans from `wp_fitness_active_content` with RTL day/meal layout.
-5. **Daily Progress Tracker** — AJAX endpoint for users to mark exercises complete; writes `completed_json` to `wp_fitness_daily_progress`.
-6. **Ticket System** — AJAX messaging into `wp_fitness_tickets`; coach and client views with attachment upload.
+1. **Plan Assignment** — Admin form to assign `workout_template` / `meal_template` to a user from the orders screen → INSERT `wp_fitness_user_plans` + copy template JSON to `wp_fitness_active_content`; include coach selector using the coach role.
+2. **WooCommerce Integration** — Hook `woocommerce_order_status_completed` → check `fitnesspro_product_map` → auto-create pending plan row in `wp_fitness_user_plans` linked to `order_id`.
+3. **Frontend Dashboard** — Shortcode `[fitnesspro_dashboard]` showing active plans from `wp_fitness_active_content` with RTL day/meal layout.
+4. **Daily Progress Tracker** — AJAX endpoint for users to mark exercises complete; writes `completed_json` to `wp_fitness_daily_progress`.
+5. **Ticket System** — AJAX messaging into `wp_fitness_tickets`; coach and client views with attachment upload.

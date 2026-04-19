@@ -79,8 +79,14 @@ class FitnessPro_Core {
 		$this->loader->add_action( 'wp_enqueue_scripts', $public, 'enqueue_scripts' );
 
 		$checkout_ui = new FitnessPro_Checkout_UI( $this->version );
-		$this->loader->add_action( 'init',              $checkout_ui, 'register_shortcode' );
+		$this->loader->add_action( 'init',               $checkout_ui, 'register_shortcode' );
 		$this->loader->add_action( 'wp_enqueue_scripts', $checkout_ui, 'maybe_enqueue_assets' );
+
+		// Checkout flow AJAX — auth available to guests, others require login
+		$this->loader->add_action( 'wp_ajax_nopriv_fp_cof_auth',  $checkout_ui, 'ajax_auth' );
+		$this->loader->add_action( 'wp_ajax_fp_cof_auth',         $checkout_ui, 'ajax_auth' );
+		$this->loader->add_action( 'wp_ajax_fp_cof_save_profile', $checkout_ui, 'ajax_save_profile' );
+		$this->loader->add_action( 'wp_ajax_fp_cof_add_to_cart',  $checkout_ui, 'ajax_add_to_cart' );
 	}
 
 	private function define_role_hooks() {
