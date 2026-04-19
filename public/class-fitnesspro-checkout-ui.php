@@ -221,6 +221,85 @@ class FitnessPro_Checkout_UI {
 		) );
 	}
 
+	// ─── AJAX: Combined Process Checkout (save profile + cart in one call) ───
+	//
+	// Called by the Pay button in Step 6.  Accepts the full JS state object so
+	// the transient is always up-to-date before the WooCommerce redirect.
+
+	public function ajax_process_checkout() {
+		check_ajax_referer( self::NONCE_KEY, 'nonce' );
+
+		if ( ! is_user_logged_in() ) {
+			wp_send_json_error( array( 'message' => __( 'لطفاً ابتدا وارد شوید.', 'fitnesspro' ) ) );
+		}
+
+		if ( ! FitnessPro_Core::is_woocommerce_active() ) {
+			wp_send_json_error( array( 'message' => __( 'ووکامرس فعال نیست.', 'fitnesspro' ) ) );
+		}
+
+		// ── 1. Decode and sanitize the full profile payload ──────────────────
+		$raw  = isset( $_POST['profile'] ) ? wp_unslash( $_POST['profile'] ) : '';
+		$data = json_decode( $raw, true );
+
+		if ( ! is_array( $data ) ) {
+			wp_send_json_error( array( 'message' => __( 'داده‌های ارسالی نامعتبر است.', 'fitnesspro' ) ) );
+		}
+
+		$clean = array(
+			'plan_type'     => isset( $data['plan_type'] )     ? sanitize_key( $data['plan_type'] )                              : '',
+			'first_name'    => isset( $data['first_name'] )    ? sanitize_text_field( $data['first_name'] )                      : '',
+			'last_name'     => isset( $data['last_name'] )     ? sanitize_text_field( $data['last_name'] )                       : '',
+			'age'           => isset( $data['age'] )           ? absint( $data['age'] )                                          : 0,
+			'gender'        => isset( $data['gender'] )        ? sanitize_key( $data['gender'] )                                 : '',
+			'height'        => isset( $data['height'] )        ? (float) $data['height']                                         : 0.0,
+			'weight'        => isset( $data['weight'] )        ? (float) $data['weight']                                         : 0.0,
+			'target_weight' => isset( $data['target_weight'] ) ? (float) $data['target_weight']                                  : 0.0,
+			'goals'         => isset( $data['goals'] )         ? array_map( 'sanitize_text_field', (array) $data['goals'] )      : array(),
+			'diseases'      => isset( $data['diseases'] )      ? array_map( 'sanitize_text_field', (array) $data['diseases'] )   : array(),
+			'eating_dis'    => isset( $data['eating_dis'] )    ? array_map( 'sanitize_text_field', (array) $data['eating_dis'] ) : array(),
+			'activity'      => isset( $data['activity'] )      ? sanitize_text_field( $data['activity'] )                        : '',
+		);
+
+		if ( empty( $clean['plan_type'] ) ) {
+			wp_send_json_error( array( 'message' => __( 'نوع برنامه انتخاب نشده است.', 'fitnesspro' ) ) );
+		}
+
+		// ── 2. Persist profile to transient (2-hour window) ──────────────────
+		set_transient(
+			'fp_checkout_profile_' . get_current_user_id(),
+			$clean,
+			self::TRANSIENT_TTL
+		);
+
+		// ── 3. Resolve mapped WooCommerce product ─────────────────────────────
+		$product_map = FitnessPro_Settings::get_product_map();
+		$product_id  = 0;
+
+		if ( 'workout' === $clean['plan_type'] ) {
+			$product_id = (int) ( $product_map['workout_product_id'] ?? 0 );
+		} elseif ( 'meal' === $clean['plan_type'] ) {
+			$product_id = (int) ( $product_map['meal_product_id'] ?? 0 );
+		}
+
+		if ( ! $product_id ) {
+			wp_send_json_error( array( 'message' => __( 'محصول مرتبط با این برنامه یافت نشد. لطفاً با پشتیبانی تماس بگیرید.', 'fitnesspro' ) ) );
+		}
+
+		// ── 4. Add to WooCommerce cart ────────────────────────────────────────
+		WC()->cart->empty_cart();
+		$cart_item_key = WC()->cart->add_to_cart( $product_id );
+
+		if ( ! $cart_item_key ) {
+			wp_send_json_error( array( 'message' => __( 'خطا در افزودن محصول به سبد خرید. لطفاً دوباره تلاش کنید.', 'fitnesspro' ) ) );
+		}
+
+		// ── 5. Return checkout URL ────────────────────────────────────────────
+		wp_send_json_success( array(
+			'message'      => __( 'در حال انتقال به صفحه پرداخت...', 'fitnesspro' ),
+			'checkout_url' => wc_get_checkout_url(),
+		) );
+	}
+
 	// ─── Shortcode Renderer ───────────────────────────────────────────────────
 
 	public function render( $atts ): string {

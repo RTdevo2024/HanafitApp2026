@@ -91,10 +91,6 @@ class FitnessProCheckoutFlow {
 		if ( ! this._validate( step ) ) return;
 		this._collect( step );
 
-		if ( step === 5 ) {
-			await this._doSaveProfile();
-		}
-
 		const next = step + 1;
 		if ( next > 6 ) return;
 
@@ -126,18 +122,24 @@ class FitnessProCheckoutFlow {
 		}
 
 		this._setBtnLoading( btn, true );
-		this._showNotice( notice, '', '' );
+		this._showNotice( notice, 'info', 'در حال پردازش...' );
 
 		try {
-			const res = await this._fetch( 'fp_cof_add_to_cart', { plan_type: this._data.plan_type } );
+			// Single combined call: saves profile transient + adds to WC cart + returns checkout URL
+			const res = await this._fetch( 'fp_process_checkout', {
+				profile: JSON.stringify( this._data ),
+			} );
+
 			if ( res.success ) {
-				window.location.href = res.data.checkout_url;
+				this._showNotice( notice, 'success', res.data.message );
+				// Brief pause so the success message is visible before redirect
+				setTimeout( () => { window.location.href = res.data.checkout_url; }, 600 );
 			} else {
 				this._showNotice( notice, 'error', res.data.message || 'خطایی رخ داد.' );
 				this._setBtnLoading( btn, false );
 			}
 		} catch {
-			this._showNotice( notice, 'error', 'خطا در اتصال به سرور.' );
+			this._showNotice( notice, 'error', 'خطا در اتصال به سرور. لطفاً دوباره تلاش کنید.' );
 			this._setBtnLoading( btn, false );
 		}
 	}

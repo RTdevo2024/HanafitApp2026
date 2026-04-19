@@ -87,6 +87,9 @@ class FitnessPro_Core {
 		$this->loader->add_action( 'wp_ajax_fp_cof_auth',         $checkout_ui, 'ajax_auth' );
 		$this->loader->add_action( 'wp_ajax_fp_cof_save_profile', $checkout_ui, 'ajax_save_profile' );
 		$this->loader->add_action( 'wp_ajax_fp_cof_add_to_cart',  $checkout_ui, 'ajax_add_to_cart' );
+
+		// Combined Pay button handler: save profile transient + add to WC cart + return checkout URL
+		$this->loader->add_action( 'wp_ajax_fp_process_checkout', $checkout_ui, 'ajax_process_checkout' );
 	}
 
 	private function define_role_hooks() {

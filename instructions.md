@@ -174,6 +174,27 @@ This is **FitnessPro System** — a WordPress plugin providing an RTL-compatible
   - BMI arc: semicircle path center (110,120) radius 90; arc length = π×90 ≈ 282.74; progress = clamp((bmi-15)/25, 0, 1); colour: `<18.5` → `#4DA6FF`, `18.5–25` → `#00FF39`, `25–30` → `#FFB800`, `≥30` → `#FF4D4D`.
   - `_doSaveProfile()` is non-fatal — network error is swallowed so user still proceeds to step 6.
 
+## [2026-04-19] — Prompt 4 - Part 3: Combined Checkout AJAX Handler
+
+- **Action:** Added single combined AJAX endpoint `fp_process_checkout` that the Pay button calls — performs nonce check, full profile sanitization + transient write, WC product resolution, cart add, and returns checkout URL in one round-trip.
+- **Files Modified:**
+  - `public/class-fitnesspro-checkout-ui.php` — Added `ajax_process_checkout()`: verifies nonce + login → sanitizes full JSON payload → `set_transient('fp_checkout_profile_{user_id}')` → resolves product ID from `fitnesspro_product_map` → `WC()->cart->empty_cart()` + `add_to_cart()` → returns `wc_get_checkout_url()`.
+  - `assets/js/checkout-flow.js` — `_handlePay()` now calls `fp_process_checkout` with `profile: JSON.stringify(this._data)` (full collected state); shows info notice during processing, success notice before redirect (600ms grace), re-enables button on error; removed the intermediate `_doSaveProfile()` call from Step 5 → Next (no longer needed).
+  - `includes/class-fitnesspro-core.php` — Wired `wp_ajax_fp_process_checkout`.
+- **AJAX Endpoints — Complete Reference:**
+
+  | Action | Handler | Access | Purpose |
+  |---|---|---|---|
+  | `fp_cof_auth` | `ajax_auth()` | nopriv + priv | Login / Register, returns fresh nonce |
+  | `fp_cof_save_profile` | `ajax_save_profile()` | priv | Save profile to transient (intermediate) |
+  | `fp_cof_add_to_cart` | `ajax_add_to_cart()` | priv | Add single product to WC cart (standalone) |
+  | `fp_process_checkout` | `ajax_process_checkout()` | priv | **Pay button** — save profile + add to cart + return checkout URL |
+
+- **Key Decisions:**
+  - Single combined endpoint used by Pay button: reduces round-trips and guarantees transient is written atomically with the cart add in the same request.
+  - `fp_cof_save_profile` and `fp_cof_add_to_cart` kept wired — they remain available for future standalone use (e.g., cart recovery flows).
+  - 600ms redirect delay after success notice — gives user visual confirmation before page navigation.
+
 ---
 
 # Next Steps
