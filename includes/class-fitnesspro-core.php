@@ -90,6 +90,16 @@ class FitnessPro_Core {
 
 		// Combined Pay button handler: save profile transient + add to WC cart + return checkout URL
 		$this->loader->add_action( 'wp_ajax_fp_process_checkout', $checkout_ui, 'ajax_process_checkout' );
+
+		// AI landing page shortcode + conditional asset enqueue
+		$ai_landing = new FitnessPro_AI_Landing( $this->version );
+		$this->loader->add_action( 'init',               $ai_landing, 'register_shortcode' );
+		$this->loader->add_action( 'wp_enqueue_scripts', $ai_landing, 'maybe_enqueue_assets' );
+
+		// WooCommerce order integration
+		$wc_integration = new FitnessPro_WC_Integration();
+		$this->loader->add_action( 'woocommerce_order_status_completed', $wc_integration, 'on_order_completed' );
+		$this->loader->add_action( 'woocommerce_thankyou',               $wc_integration, 'redirect_to_ai_landing' );
 	}
 
 	private function define_role_hooks() {

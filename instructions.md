@@ -195,12 +195,37 @@ This is **FitnessPro System** — a WordPress plugin providing an RTL-compatible
   - `fp_cof_save_profile` and `fp_cof_add_to_cart` kept wired — they remain available for future standalone use (e.g., cart recovery flows).
   - 600ms redirect delay after success notice — gives user visual confirmation before page navigation.
 
+## [2026-04-19] — Prompt 4 QA Audit: Four Bug Fixes
+
+- **Action:** Audited Phase 4 CSS/JS/PHP against master spec and patched four gaps.
+- **Bug 1 — Double CSS padding (`.fco-step`):** `.fco-steps-wrapper` already had `padding: 24px 20px 0`; `.fco-step` added another `padding: 0 20px` = 40px horizontal total on mobile. Fixed: removed `padding: 0 20px` from `.fco-step`.
+- **Bug 2 — Email-only login:** Spec required phone OR email; login input was `type="email"`, PHP used only `get_user_by('email')`. Fixed: input changed to `type="text" id="fco-login-identifier"`, `do_login()` rewrites to try email first then `fp_phone` meta lookup, JS payload key changed from `email` to `identifier`.
+- **Bug 3 — No client-side password validation:** Register form sent AJAX before checking password length; server caught it but wasted a round-trip. Fixed: JS guard checks `pass.length < 8` before `_doAuth('register')` call.
+- **Bug 4 — No directional back animation:** `_showStep(n, forward)` accepted `forward` param but never used it — going back played the same `fco-fade-up` (upward) animation. Fixed: `_showStep()` sets `container.dataset.navDir = forward ? 'forward' : 'back'`; added `@keyframes fco-fade-down` (translateY -18px → 0) and CSS rule `[data-nav-dir="back"] .fco-step.is-active { animation: fco-fade-down }`.
+
+## [2026-04-19] — Phase 5: WooCommerce Order Completion & AI Processing Page
+
+- **Action:** Wired order completion to DB plan creation; built full-screen AI animation landing page with 10-second progress bar and Persian text.
+- **Files Created:**
+  - `includes/class-fitnesspro-wc-integration.php` — `FitnessPro_WC_Integration`: `on_order_completed()` guards with `_fp_plan_created` meta, calls `resolve_plan_type()`, INSERTs into `wp_fitness_user_plans` (status=`pending`, expiry=+30 days), deletes checkout transient; `redirect_to_ai_landing()` fires on `woocommerce_thankyou` — locates published page with `[fitness_ai_processing]` shortcode via `$wpdb` content query, injects `window.location.replace()` JS.
+  - `public/class-fitnesspro-ai-landing.php` — `FitnessPro_AI_Landing`: shortcode `[fitness_ai_processing redirect="" seconds="10"]`; renders `#fp-ai-container` full-screen div with `data-redirect` + `data-seconds`; HTML includes animated background (grid + 8 particles + scanline sweep), glowing orb (3 rotating rings + core emoji 🧠 + conic scan), Persian headline, `.fp-ai-progress-bar` + `#fp-ai-fill` + `#fp-ai-pct` + `#fp-ai-eta`, 4-step checklist at `data-delay="1,3,5,8"`.
+  - `assets/css/ai-landing.css` — Full-screen `position:fixed; inset:0; z-index:99999; background:#0a0a0a`; animated grid pan `@keyframes fp-grid-pan`; scanline sweep `@keyframes fp-scanline`; 8 floating particles `@keyframes fp-float`; 3-ring spinner `@keyframes fp-ring-spin`; core `@keyframes fp-core-pulse`; conic scan sweep; progress fill with glow + leading dot pseudo; step dot `@keyframes fp-dot-pulse`; `.is-active` and `.is-done` states with neon green color + box-shadow tick checkmark.
+  - `assets/js/ai-landing.js` — `requestAnimationFrame` loop: percentage counter 0→100 over `seconds * 1000ms`; updates `fillEl.style.width`, `pctEl.textContent`, `barEl[aria-valuenow]`, `etaEl.textContent`; `setTimeout` at `data-delay * 1000ms` per step: removes `.is-active` from previous, adds `.is-active` to current; marks all `.is-done` at `totalMs - 500`; redirects via `window.location.href` after `totalMs + 600ms`.
+- **Files Modified:**
+  - `hanafit-app.php` — Added `require_once` for `public/class-fitnesspro-ai-landing.php` and `includes/class-fitnesspro-wc-integration.php`.
+  - `includes/class-fitnesspro-core.php` — `define_public_hooks()`: instantiates `FitnessPro_AI_Landing` and wires `init → register_shortcode`, `wp_enqueue_scripts → maybe_enqueue_assets`; instantiates `FitnessPro_WC_Integration` and wires `woocommerce_order_status_completed → on_order_completed`, `woocommerce_thankyou → redirect_to_ai_landing`.
+- **Key Decisions:**
+  - `_fp_plan_created` order meta guards against duplicate plan rows on repeated `completed` → `processing` → `completed` status toggles.
+  - AI landing page discovered at runtime via `$wpdb` content LIKE query — no hardcoded page ID required; admin just creates a page with `[fitness_ai_processing]`.
+  - `woocommerce_thankyou` redirect uses `window.location.replace()` — removes the WC thank-you page from browser history so Back button doesn't loop back to it.
+  - AI JS uses `requestAnimationFrame` for the percentage counter (smooth, battery-friendly) while step activations use `setTimeout` keyed to `data-delay` — two independent timelines that stay in sync with the fixed `seconds` duration.
+  - All Persian strings wrapped in `esc_html_e()` / `__()` for i18n.
+
 ---
 
 # Next Steps
 
 1. **Plan Assignment** — Admin form to assign `workout_template` / `meal_template` to a user from the orders screen → INSERT `wp_fitness_user_plans` + copy template JSON to `wp_fitness_active_content`; include coach selector using the coach role.
-2. **WooCommerce Integration** — Hook `woocommerce_order_status_completed` → check `fitnesspro_product_map` → auto-create pending plan row in `wp_fitness_user_plans` linked to `order_id`.
-3. **Frontend Dashboard** — Shortcode `[fitnesspro_dashboard]` showing active plans from `wp_fitness_active_content` with RTL day/meal layout.
-4. **Daily Progress Tracker** — AJAX endpoint for users to mark exercises complete; writes `completed_json` to `wp_fitness_daily_progress`.
-5. **Ticket System** — AJAX messaging into `wp_fitness_tickets`; coach and client views with attachment upload.
+2. **Frontend Dashboard** — Shortcode `[fitnesspro_dashboard]` showing active plans from `wp_fitness_active_content` with RTL day/meal layout.
+3. **Daily Progress Tracker** — AJAX endpoint for users to mark exercises complete; writes `completed_json` to `wp_fitness_daily_progress`.
+4. **Ticket System** — AJAX messaging into `wp_fitness_tickets`; coach and client views with attachment upload.
