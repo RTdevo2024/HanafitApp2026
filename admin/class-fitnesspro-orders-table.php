@@ -184,10 +184,19 @@ class FitnessPro_Orders_Table extends WP_List_Table {
 				return '<a href="' . $profile_url . '">' . esc_html( $item['user_name'] ) . '</a>';
 
 			case 'coach':
+				if ( current_user_can( 'manage_options' ) ) {
+					$coach_label = ( ! empty( $item['coach_name'] ) && 0 !== (int) $item['coach_id'] )
+						? esc_html( $item['coach_name'] )
+						: '<span class="fp-badge--unassigned">' . esc_html__( 'تخصیص‌نیافته', 'fitnesspro' ) . '</span>';
+					return $coach_label
+						. '<br><button type="button" class="button fp-open-assign-btn"'
+						. ' data-plan-id="' . esc_attr( $item['id'] ) . '"'
+						. ' data-coach-id="' . esc_attr( $item['coach_id'] ) . '">'
+						. esc_html__( 'تخصیص مربی', 'fitnesspro' )
+						. '</button>';
+				}
 				if ( empty( $item['coach_name'] ) || 0 === (int) $item['coach_id'] ) {
-					return '<span class="fp-badge fp-badge--unassigned">'
-						. esc_html__( 'تخصیص‌نیافته', 'fitnesspro' )
-						. '</span>';
+					return '<span class="fp-badge--unassigned">' . esc_html__( 'تخصیص‌نیافته', 'fitnesspro' ) . '</span>';
 				}
 				$coach_url = esc_url( get_edit_user_link( (int) $item['coach_id'] ) );
 				return '<a href="' . $coach_url . '">' . esc_html( $item['coach_name'] ) . '</a>';

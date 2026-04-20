@@ -76,7 +76,12 @@ class FitnessPro_WC_Integration {
 			$order->update_meta_data( self::META_PLAN_CREATED, '1' );
 			$order->save();
 
-			// Wipe the checkout transient — data is now in the plans table
+			// Persist profile to user meta so coaches can read it after the transient expires
+			$profile = get_transient( 'fp_checkout_profile_' . $user_id );
+			if ( $profile ) {
+				update_user_meta( $user_id, 'fp_health_profile', wp_json_encode( $profile ) );
+			}
+
 			delete_transient( 'fp_checkout_profile_' . $user_id );
 		}
 	}

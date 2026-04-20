@@ -58,11 +58,13 @@ class FitnessPro_Core {
 	private function define_admin_hooks() {
 		$admin    = new FitnessPro_Admin( $this->version );
 		$settings = new FitnessPro_Settings();
+		$coach    = new FitnessPro_Coach_Panel( $this->version );
 
 		$this->loader->add_action( 'admin_enqueue_scripts', $admin, 'enqueue_styles' );
 		$this->loader->add_action( 'admin_enqueue_scripts', $admin, 'enqueue_scripts' );
 		$this->loader->add_action( 'admin_enqueue_scripts', $admin, 'enqueue_metabox_assets' );
 		$this->loader->add_action( 'admin_enqueue_scripts', $admin, 'enqueue_settings_assets' );
+		$this->loader->add_action( 'admin_enqueue_scripts', $coach, 'enqueue_assets' );
 		$this->loader->add_action( 'admin_menu', $admin, 'register_menus' );
 
 		// Product map save (form POST via admin-post.php)
@@ -71,6 +73,13 @@ class FitnessPro_Core {
 		// Dynamic field AJAX (admin-only; no nopriv variant needed)
 		$this->loader->add_action( 'wp_ajax_fp_add_field_item',    $settings, 'ajax_add_field_item' );
 		$this->loader->add_action( 'wp_ajax_fp_remove_field_item', $settings, 'ajax_remove_field_item' );
+
+		// Coach panel AJAX — coaches + admins
+		$this->loader->add_action( 'wp_ajax_fp_get_coach_templates', $coach, 'ajax_get_templates' );
+		$this->loader->add_action( 'wp_ajax_fp_assign_plan',         $coach, 'ajax_assign_plan' );
+
+		// Coach assignment — admin only
+		$this->loader->add_action( 'wp_ajax_fp_assign_coach', $coach, 'ajax_assign_coach' );
 	}
 
 	private function define_public_hooks() {

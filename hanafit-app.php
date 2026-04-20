@@ -29,6 +29,7 @@ require_once FITNESSPRO_PLUGIN_DIR . 'admin/class-fitnesspro-orders-table.php';
 require_once FITNESSPRO_PLUGIN_DIR . 'includes/class-fitnesspro-activator.php';
 require_once FITNESSPRO_PLUGIN_DIR . 'includes/class-fitnesspro-deactivator.php';
 require_once FITNESSPRO_PLUGIN_DIR . 'admin/class-fitnesspro-admin.php';
+require_once FITNESSPRO_PLUGIN_DIR . 'admin/class-fitnesspro-coach-panel.php';
 require_once FITNESSPRO_PLUGIN_DIR . 'public/class-fitnesspro-public.php';
 require_once FITNESSPRO_PLUGIN_DIR . 'public/class-fitnesspro-checkout-ui.php';
 require_once FITNESSPRO_PLUGIN_DIR . 'public/class-fitnesspro-ai-landing.php';

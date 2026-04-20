@@ -221,11 +221,41 @@ This is **FitnessPro System** — a WordPress plugin providing an RTL-compatible
   - AI JS uses `requestAnimationFrame` for the percentage counter (smooth, battery-friendly) while step activations use `setTimeout` keyed to `data-delay` — two independent timelines that stay in sync with the fixed `seconds` duration.
   - All Persian strings wrapped in `esc_html_e()` / `__()` for i18n.
 
+## [2026-04-20] — Phase 6: Coach Fulfillment Panel
+
+- **Action:** Built the complete coach dashboard — client health profile viewer, template browser, inline personalisation editor, plan publishing to `wp_fitness_active_content`, system + email notification, and admin coach-assignment from the orders table.
+- **Files Created:**
+  - `admin/class-fitnesspro-coach-panel.php` — `FitnessPro_Coach_Panel`: `render()` outputs RTL two-column layout (client list + sticky profile panel) + two-step template/editor modal; `ajax_get_templates()` returns all published `workout_template`/`meal_template` CPT posts with decoded `_tpl_data` JSON; `ajax_assign_plan()` verifies coach ownership, sanitizes + upserts into `wp_fitness_active_content`, activates plan (`status → active`), pushes notification; `ajax_assign_coach()` admin-only AJAX to set `coach_id` on any plan.
+  - `assets/css/coach-panel.css` — Client list (4-col RTL grid), profile side panel (2-col field grid + chip tags), full modal overlay (2-step: template cards → plan editor), day tab switcher, exercise row grid (5-col: name/sets/reps/note/remove), meal cards (items textarea + 4-col macro inputs), `fp-assign-coach-modal` for orders table.
+  - `assets/js/coach-panel.js` — `FitnessProCoachPanel` OOP class: delegated click on list → `_showProfile()` / `_openModal()`; modal template list AJAX; card select enables "Next"; `_buildWorkoutEditor()` (day tabs + exercise rows) / `_buildMealEditor()` (meal cards); `_collectPlanData()` reads all inputs; `_publish()` AJAX + updates row UI; `FitnessProCoachAssign` class handles inline orders-table coach assignment modal via existing `fp_assign_coach` endpoint.
+- **Files Modified:**
+  - `includes/class-fitnesspro-wc-integration.php` — `on_order_completed()`: reads transient before deletion, saves to `fp_health_profile` user meta (persistent) so coaches can read it after transient expiry.
+  - `admin/class-fitnesspro-admin.php` — `render_coach_dashboard()` delegates to `FitnessPro_Coach_Panel::render()`; added `enqueue_coach_assets()` method; `render_orders_page()` now includes "Assign Coach" modal HTML with populated coach `<select>` + nonce hidden input.
+  - `admin/class-fitnesspro-orders-table.php` — `column_default` case `coach`: admins see coach name + "تخصیص مربی" button (with `data-plan-id` / `data-coach-id`) that opens the assign modal; non-admins see read-only output.
+  - `includes/class-fitnesspro-core.php` — `define_admin_hooks()`: instantiates `FitnessPro_Coach_Panel`, wires `admin_enqueue_scripts → enqueue_assets`, `wp_ajax_fp_get_coach_templates`, `wp_ajax_fp_assign_plan`, `wp_ajax_fp_assign_coach`.
+  - `hanafit-app.php` — Added `require_once` for `admin/class-fitnesspro-coach-panel.php`.
+- **User Meta Keys Added:**
+  - `fp_health_profile` — JSON of checkout profile data, persisted on order completion (was transient-only before).
+  - `fp_notifications` — JSON array of `{type, plan_type, message, created_at, read}` objects; appended to on plan publish.
+- **AJAX Endpoints — Phase 6:**
+
+  | Action | Handler | Access | Purpose |
+  |---|---|---|---|
+  | `fp_get_coach_templates` | `ajax_get_templates()` | coach + admin | Load published templates for plan type |
+  | `fp_assign_plan` | `ajax_assign_plan()` | coach + admin | Upsert to wp_fitness_active_content + activate plan + notify |
+  | `fp_assign_coach` | `ajax_assign_coach()` | admin only | Set coach_id on a plan from orders table |
+
+- **Key Decisions:**
+  - Coach visibility: `ajax_assign_plan()` checks `coach_id = get_current_user_id()` for coaches but bypasses for admins — allows admin to test/override without re-assigning themselves.
+  - Profile data durable copy: moved from transient (7200s TTL) to `fp_health_profile` user meta on order completion — coaches can read it days/weeks later.
+  - Inline plan editor reuses the same JSON structure as `_tpl_data` from Phase 2 meta boxes — no conversion layer needed between template storage and active content storage.
+  - `wp_fitness_active_content` upsert uses `SELECT id` + conditional UPDATE/INSERT rather than `ON DUPLICATE KEY UPDATE` — avoids MySQL-specific syntax and keeps it compatible with `$wpdb` abstraction.
+  - `wp_mail()` call is non-blocking (WP handles it via PHPMailer); if SMTP is not configured, it fails silently — `fp_notifications` user meta provides a reliable fallback notification channel for the frontend dashboard.
+
 ---
 
 # Next Steps
 
-1. **Plan Assignment** — Admin form to assign `workout_template` / `meal_template` to a user from the orders screen → INSERT `wp_fitness_user_plans` + copy template JSON to `wp_fitness_active_content`; include coach selector using the coach role.
-2. **Frontend Dashboard** — Shortcode `[fitnesspro_dashboard]` showing active plans from `wp_fitness_active_content` with RTL day/meal layout.
-3. **Daily Progress Tracker** — AJAX endpoint for users to mark exercises complete; writes `completed_json` to `wp_fitness_daily_progress`.
-4. **Ticket System** — AJAX messaging into `wp_fitness_tickets`; coach and client views with attachment upload.
+1. **Frontend Dashboard** — Shortcode `[fitnesspro_dashboard]` showing active plans from `wp_fitness_active_content` with RTL day/meal layout.
+2. **Daily Progress Tracker** — AJAX endpoint for users to mark exercises complete; writes `completed_json` to `wp_fitness_daily_progress`.
+3. **Ticket System** — AJAX messaging into `wp_fitness_tickets`; coach and client views with attachment upload.

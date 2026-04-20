@@ -103,6 +103,13 @@ class FitnessPro_Admin {
 	}
 
 	/**
+	 * Loads coach panel CSS/JS on the coach dashboard screen.
+	 */
+	public function enqueue_coach_assets( $hook_suffix ) {
+		( new FitnessPro_Coach_Panel( $this->version ) )->enqueue_assets( $hook_suffix );
+	}
+
+	/**
 	 * Loads dashboard stats + settings page assets on relevant FitnessPro screens.
 	 */
 	public function enqueue_settings_assets( $hook_suffix ) {
@@ -256,8 +263,10 @@ class FitnessPro_Admin {
 	}
 
 	public function render_orders_page() {
-		$table = new FitnessPro_Orders_Table();
+		$table   = new FitnessPro_Orders_Table();
 		$table->prepare_items();
+		$coaches = get_users( array( 'role' => FitnessPro_Roles::COACH_ROLE ) );
+		$nonce   = wp_create_nonce( FitnessPro_Coach_Panel::NONCE_KEY );
 		?>
 		<div class="wrap fitnesspro-wrap fitnesspro-orders-wrap" dir="rtl">
 			<h1 class="wp-heading-inline"><?php esc_html_e( 'سفارشات فیتنس', 'fitnesspro' ); ?></h1>
@@ -266,6 +275,33 @@ class FitnessPro_Admin {
 				<input type="hidden" name="page" value="fitnesspro-orders">
 				<?php $table->display(); ?>
 			</form>
+
+			<?php /* ── Assign Coach modal ── */ ?>
+			<input type="hidden" id="fp-coach-nonce-val" value="<?php echo esc_attr( $nonce ); ?>">
+			<div class="fp-assign-coach-modal" id="fp-assign-coach-modal" hidden>
+				<div class="fp-assign-coach-modal__overlay" id="fp-assign-overlay"></div>
+				<div class="fp-assign-coach-modal__box" dir="rtl">
+					<h3><?php esc_html_e( 'تخصیص مربی', 'fitnesspro' ); ?></h3>
+					<input type="hidden" id="fp-assign-plan-id" value="">
+					<select id="fp-assign-coach-sel">
+						<option value="0"><?php esc_html_e( '— بدون مربی —', 'fitnesspro' ); ?></option>
+						<?php foreach ( $coaches as $coach ) : ?>
+						<option value="<?php echo esc_attr( $coach->ID ); ?>">
+							<?php echo esc_html( $coach->display_name ); ?>
+						</option>
+						<?php endforeach; ?>
+					</select>
+					<div class="fp-assign-modal-foot">
+						<button type="button" class="button" id="fp-assign-cancel">
+							<?php esc_html_e( 'انصراف', 'fitnesspro' ); ?>
+						</button>
+						<button type="button" class="button button-primary" id="fp-assign-save">
+							<?php esc_html_e( 'ذخیره', 'fitnesspro' ); ?>
+						</button>
+					</div>
+				</div>
+			</div><!-- .fp-assign-coach-modal -->
+
 		</div>
 		<?php
 	}
@@ -275,11 +311,6 @@ class FitnessPro_Admin {
 	}
 
 	public function render_coach_dashboard() {
-		?>
-		<div class="wrap fitnesspro-wrap" dir="rtl">
-			<h1><?php esc_html_e( 'داشبورد مربی', 'fitnesspro' ); ?></h1>
-			<p><?php esc_html_e( 'پنل اختصاصی مربی فیتنس — برنامه‌ها و پیام‌های شما اینجا نمایش داده می‌شوند.', 'fitnesspro' ); ?></p>
-		</div>
-		<?php
+		( new FitnessPro_Coach_Panel( $this->version ) )->render();
 	}
 }
