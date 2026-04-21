@@ -1,0 +1,626 @@
+/* =========================================================
+   FitnessPro — Tickets, Chat Thread & Notification Bell
+   Dark/Neon theme (public), plain admin styles (coach chat / monitor)
+   RTL throughout.
+   ========================================================= */
+
+/* ── Public ticket wrap ─────────────────────────────────────────────────── */
+#fp-tickets-wrap,
+.fp-tickets-wrap {
+	background: var(--fp-bg, #0d0d0d);
+	color: var(--fp-text, #f0f0f0);
+	font-family: 'Vazirmatn', sans-serif;
+	min-height: 100dvh;
+	min-height: 100vh;
+	display: flex;
+	flex-direction: column;
+	-webkit-font-smoothing: antialiased;
+}
+
+.fp-tickets-inner {
+	max-width: 480px;
+	margin: 0 auto;
+	width: 100%;
+	padding: 0 0 24px;
+	display: flex;
+	flex-direction: column;
+	flex: 1;
+	min-height: 0;
+}
+
+/* ── Header ── */
+.fp-tickets-header {
+	background: var(--fp-surface, rgba(255, 255, 255, 0.04));
+	border-bottom: 1px solid var(--fp-border, rgba(255, 255, 255, 0.07));
+	padding: 14px 16px;
+	flex-shrink: 0;
+	position: sticky;
+	top: 0;
+	z-index: 10;
+	backdrop-filter: blur(8px);
+}
+
+.fp-tickets-coach-info {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+}
+
+.fp-tickets-avatar {
+	width: 44px;
+	height: 44px;
+	border-radius: 50%;
+	background: var(--fp-neon-dim, rgba(0, 255, 57, 0.15));
+	border: 1px solid rgba(0, 255, 57, 0.25);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 22px;
+	flex-shrink: 0;
+}
+
+.fp-tickets-coach-name {
+	font-size: 15px;
+	font-weight: 700;
+	color: var(--fp-text, #f0f0f0);
+	margin: 0;
+}
+
+.fp-tickets-subtitle {
+	font-size: 12px;
+	color: var(--fp-neon, #00ff39);
+	font-weight: 600;
+	margin: 0;
+}
+
+/* ── Message thread ── */
+.fp-thread {
+	flex: 1;
+	overflow-y: auto;
+	padding: 16px;
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	scroll-behavior: smooth;
+	min-height: 300px;
+}
+
+.fp-thread-empty {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	flex: 1;
+	gap: 12px;
+	padding: 48px 20px;
+	font-size: 40px;
+}
+
+.fp-thread-empty p {
+	font-size: 14px;
+	color: var(--fp-muted, rgba(255, 255, 255, 0.45));
+	margin: 0;
+	text-align: center;
+}
+
+/* ── Message bubbles ── */
+.fp-msg {
+	display: flex;
+	max-width: 80%;
+}
+
+.fp-msg--me   { align-self: flex-end;   flex-direction: row-reverse; }
+.fp-msg--them { align-self: flex-start; }
+
+.fp-msg-bubble {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	padding: 10px 14px;
+	border-radius: 16px;
+	max-width: 100%;
+	word-break: break-word;
+}
+
+.fp-msg--me .fp-msg-bubble {
+	background: var(--fp-neon-dim, rgba(0, 255, 57, 0.15));
+	border: 1px solid rgba(0, 255, 57, 0.25);
+	border-bottom-left-radius: 4px;
+}
+
+.fp-msg--them .fp-msg-bubble {
+	background: var(--fp-surface, rgba(255, 255, 255, 0.04));
+	border: 1px solid var(--fp-border, rgba(255, 255, 255, 0.07));
+	border-bottom-right-radius: 4px;
+}
+
+.fp-msg-text {
+	font-size: 14px;
+	line-height: 1.6;
+	color: var(--fp-text, #f0f0f0);
+	margin: 0;
+}
+
+.fp-msg-attachment img {
+	max-width: 220px;
+	max-height: 220px;
+	border-radius: 10px;
+	display: block;
+	object-fit: cover;
+}
+
+.fp-msg-time {
+	font-size: 10px;
+	color: var(--fp-muted, rgba(255, 255, 255, 0.45));
+	align-self: flex-end;
+	white-space: nowrap;
+}
+
+/* ── Message input bar ── */
+.fp-msg-form {
+	flex-shrink: 0;
+	padding: 8px 12px;
+	border-top: 1px solid var(--fp-border, rgba(255, 255, 255, 0.07));
+	background: var(--fp-bg, #0d0d0d);
+	position: sticky;
+	bottom: 0;
+}
+
+.fp-msg-input-area {
+	display: flex;
+	align-items: flex-end;
+	gap: 8px;
+	background: var(--fp-surface, rgba(255, 255, 255, 0.04));
+	border: 1px solid var(--fp-border, rgba(255, 255, 255, 0.07));
+	border-radius: 24px;
+	padding: 8px 12px;
+	transition: border-color 0.2s;
+}
+
+.fp-msg-input-area:focus-within {
+	border-color: rgba(0, 255, 57, 0.4);
+}
+
+.fp-attach-btn {
+	cursor: pointer;
+	color: var(--fp-muted, rgba(255, 255, 255, 0.45));
+	flex-shrink: 0;
+	line-height: 0;
+	transition: color 0.15s;
+	padding: 4px;
+}
+
+.fp-attach-btn:hover { color: var(--fp-neon, #00ff39); }
+
+.fp-attach-preview {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	flex-shrink: 0;
+}
+
+.fp-attach-preview img {
+	width: 40px;
+	height: 40px;
+	object-fit: cover;
+	border-radius: 8px;
+	border: 1px solid rgba(0, 255, 57, 0.3);
+}
+
+.fp-attach-remove {
+	background: none;
+	border: none;
+	color: var(--fp-muted, rgba(255, 255, 255, 0.45));
+	cursor: pointer;
+	font-size: 14px;
+	padding: 2px;
+	line-height: 1;
+}
+
+.fp-msg-textarea {
+	flex: 1;
+	background: transparent;
+	border: none;
+	outline: none;
+	color: var(--fp-text, #f0f0f0);
+	font-family: 'Vazirmatn', sans-serif;
+	font-size: 14px;
+	resize: none;
+	line-height: 1.5;
+	max-height: 120px;
+	overflow-y: auto;
+	padding: 4px 0;
+}
+
+.fp-msg-textarea::placeholder { color: var(--fp-muted, rgba(255, 255, 255, 0.45)); }
+
+.fp-send-btn {
+	background: var(--fp-neon, #00ff39);
+	border: none;
+	color: #0d0d0d;
+	width: 38px;
+	height: 38px;
+	border-radius: 50%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	cursor: pointer;
+	flex-shrink: 0;
+	transition: box-shadow 0.15s, transform 0.1s;
+}
+
+.fp-send-btn:hover { box-shadow: 0 0 16px rgba(0, 255, 57, 0.5); transform: scale(1.05); }
+.fp-send-btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
+
+/* ── Notification Bell ────────────────────────────────────────────────────── */
+.fp-notif-wrap { position: relative; }
+
+.fp-notif-bell {
+	background: none;
+	border: none;
+	cursor: pointer;
+	color: var(--fp-muted, rgba(255, 255, 255, 0.45));
+	position: relative;
+	padding: 6px;
+	border-radius: 50%;
+	transition: color 0.15s, background 0.15s;
+	line-height: 0;
+}
+
+.fp-notif-bell:hover {
+	color: var(--fp-text, #f0f0f0);
+	background: rgba(255, 255, 255, 0.06);
+}
+
+.fp-notif-bell.has-unread { color: var(--fp-neon, #00ff39); }
+
+.fp-notif-badge {
+	position: absolute;
+	top: 2px;
+	left: 2px;
+	min-width: 18px;
+	height: 18px;
+	background: #ff4444;
+	color: #fff;
+	font-size: 10px;
+	font-weight: 800;
+	border-radius: 9px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 0 4px;
+	line-height: 1;
+	pointer-events: none;
+}
+
+.fp-notif-dropdown {
+	position: absolute;
+	top: calc(100% + 6px);
+	left: 0;
+	width: 280px;
+	background: #1a1a1a;
+	border: 1px solid rgba(255, 255, 255, 0.1);
+	border-radius: 14px;
+	overflow: hidden;
+	box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+	z-index: 1000;
+}
+
+.fp-notif-head {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 12px 16px;
+	border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.fp-notif-head span {
+	font-size: 13px;
+	font-weight: 700;
+	color: var(--fp-text, #f0f0f0);
+}
+
+.fp-notif-mark-read {
+	background: none;
+	border: none;
+	font-size: 11px;
+	color: var(--fp-neon, #00ff39);
+	cursor: pointer;
+	font-family: inherit;
+	padding: 0;
+}
+
+.fp-notif-list { max-height: 320px; overflow-y: auto; }
+
+.fp-notif-item {
+	display: flex;
+	flex-direction: column;
+	gap: 3px;
+	padding: 12px 16px;
+	border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.fp-notif-item:last-child { border-bottom: none; }
+
+.fp-notif-item.is-unread {
+	background: rgba(0, 255, 57, 0.03);
+	border-right: 3px solid var(--fp-neon, #00ff39);
+	padding-right: 13px;
+}
+
+.fp-notif-item__msg {
+	font-size: 13px;
+	color: var(--fp-text, #f0f0f0);
+	margin: 0;
+	line-height: 1.4;
+}
+
+.fp-notif-item__time {
+	font-size: 11px;
+	color: var(--fp-muted, rgba(255, 255, 255, 0.45));
+}
+
+.fp-notif-empty {
+	padding: 24px 16px;
+	text-align: center;
+	font-size: 13px;
+	color: var(--fp-muted, rgba(255, 255, 255, 0.45));
+}
+
+/* Header right group (bell + logo) */
+.fp-dash-header-right {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+}
+
+/* ── Coach admin chat panel (light WP admin style) ───────────────────────── */
+.fp-coach-chat-wrap {
+	border: 1px solid #ddd;
+	border-radius: 6px;
+	background: #fff;
+	margin-top: 20px;
+	overflow: hidden;
+}
+
+.fp-coach-chat-header {
+	background: #f6f7f7;
+	border-bottom: 1px solid #ddd;
+	padding: 10px 16px;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+}
+
+.fp-coach-chat-title { font-size: 13px; font-weight: 700; color: #1d2327; }
+
+.fp-coach-chat-close {
+	background: none;
+	border: none;
+	cursor: pointer;
+	color: #666;
+	font-size: 16px;
+	line-height: 1;
+	padding: 2px 6px;
+	border-radius: 3px;
+}
+
+.fp-coach-chat-close:hover { background: #e0e0e0; }
+
+.fp-coach-thread {
+	height: 300px;
+	overflow-y: auto;
+	padding: 12px 16px;
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	background: #fafafa;
+}
+
+/* Light overrides for admin chat bubbles */
+.fp-coach-chat-wrap .fp-msg-bubble { font-family: inherit; font-size: 13px; }
+
+.fp-coach-chat-wrap .fp-msg--me .fp-msg-bubble {
+	background: #e8f0fb;
+	border: 1px solid #c0d6f0;
+}
+
+.fp-coach-chat-wrap .fp-msg--them .fp-msg-bubble {
+	background: #fff;
+	border: 1px solid #e0e0e0;
+}
+
+.fp-coach-chat-wrap .fp-msg-text { color: #1d2327; }
+.fp-coach-chat-wrap .fp-msg-time { color: #999; }
+
+/* Coach chat input */
+.fp-coach-chat-form {
+	border-top: 1px solid #ddd;
+	padding: 10px 16px;
+	background: #fff;
+	display: flex;
+	gap: 8px;
+	align-items: flex-end;
+}
+
+.fp-coach-chat-form textarea {
+	flex: 1;
+	border: 1px solid #ddd;
+	border-radius: 6px;
+	padding: 8px 10px;
+	font-size: 13px;
+	font-family: inherit;
+	resize: none;
+	line-height: 1.5;
+	max-height: 96px;
+	overflow-y: auto;
+}
+
+.fp-coach-chat-form textarea:focus {
+	outline: none;
+	border-color: #2271b1;
+}
+
+.fp-coach-chat-send {
+	background: #2271b1;
+	border: none;
+	color: #fff;
+	border-radius: 6px;
+	padding: 8px 14px;
+	font-size: 13px;
+	font-family: inherit;
+	font-weight: 600;
+	cursor: pointer;
+	white-space: nowrap;
+	transition: background 0.15s;
+}
+
+.fp-coach-chat-send:hover { background: #135e96; }
+.fp-coach-chat-send:disabled { opacity: 0.55; cursor: not-allowed; }
+
+.fp-chat-attach-label {
+	cursor: pointer;
+	color: #888;
+	display: flex;
+	align-items: center;
+	padding: 6px;
+	border-radius: 4px;
+	line-height: 0;
+	flex-shrink: 0;
+	transition: color 0.12s;
+}
+
+.fp-chat-attach-label:hover { color: #2271b1; }
+
+.fp-chat-attach-preview {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+}
+
+.fp-chat-attach-preview img {
+	width: 36px;
+	height: 36px;
+	object-fit: cover;
+	border-radius: 4px;
+	border: 1px solid #ddd;
+}
+
+.fp-chat-attach-preview button {
+	background: none;
+	border: none;
+	color: #888;
+	cursor: pointer;
+	font-size: 14px;
+}
+
+/* ── Admin ticket monitoring page ────────────────────────────────────────── */
+.fp-ticket-admin-wrap .fp-ticket-admin-layout {
+	display: grid;
+	grid-template-columns: 320px 1fr;
+	gap: 20px;
+	margin-top: 20px;
+	height: calc(100vh - 160px);
+	align-items: start;
+}
+
+.fp-ticket-thread-list {
+	background: #fff;
+	border: 1px solid #ddd;
+	border-radius: 6px;
+	overflow-y: auto;
+	height: 100%;
+}
+
+.fp-thread-item {
+	width: 100%;
+	background: none;
+	border: none;
+	border-bottom: 1px solid #f0f0f0;
+	padding: 14px 16px;
+	cursor: pointer;
+	text-align: right;
+	transition: background 0.12s;
+	display: block;
+}
+
+.fp-thread-item:hover { background: #f6f7f7; }
+.fp-thread-item.is-active { background: #e8f0fb; border-right: 3px solid #2271b1; padding-right: 13px; }
+.fp-thread-item:last-child { border-bottom: none; }
+
+.fp-thread-item__names {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	font-size: 13px;
+	margin-bottom: 4px;
+	flex-wrap: wrap;
+}
+
+.fp-thread-item__sep { color: #bbb; font-size: 11px; }
+
+.fp-thread-item__preview {
+	font-size: 12px;
+	color: #666;
+	margin: 0 0 4px;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	max-width: 100%;
+}
+
+.fp-thread-item__meta {
+	display: flex;
+	justify-content: space-between;
+	font-size: 11px;
+	color: #999;
+}
+
+.fp-ticket-thread-viewer {
+	background: #fff;
+	border: 1px solid #ddd;
+	border-radius: 6px;
+	overflow: hidden;
+	height: 100%;
+	display: flex;
+	flex-direction: column;
+}
+
+.fp-ticket-viewer-empty {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	flex: 1;
+	gap: 12px;
+	color: #aaa;
+	font-size: 36px;
+}
+
+.fp-ticket-viewer-empty p { font-size: 14px; color: #aaa; margin: 0; }
+
+.fp-ticket-viewer-header {
+	background: #f6f7f7;
+	border-bottom: 1px solid #ddd;
+	padding: 12px 16px;
+	font-size: 13px;
+	font-weight: 700;
+	flex-shrink: 0;
+}
+
+.fp-ticket-viewer-thread {
+	flex: 1;
+	overflow-y: auto;
+	padding: 16px;
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	background: #fafafa;
+}
+
+/* ── Responsive ── */
+@media (max-width: 782px) {
+	.fp-ticket-admin-wrap .fp-ticket-admin-layout { grid-template-columns: 1fr; height: auto; }
+	.fp-ticket-thread-list  { height: 250px; }
+	.fp-ticket-thread-viewer { height: 400px; }
+}

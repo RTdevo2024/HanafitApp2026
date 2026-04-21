@@ -204,6 +204,16 @@ class FitnessPro_Admin {
 			'fitnesspro-coach-dashboard',
 			array( $this, 'render_coach_dashboard' )
 		);
+
+		// Admin-only ticket monitoring
+		add_submenu_page(
+			'fitnesspro-dashboard',
+			__( 'مانیتورینگ پیام‌ها', 'fitnesspro' ),
+			__( 'پیام‌ها', 'fitnesspro' ),
+			'manage_options',
+			'fitnesspro-tickets',
+			array( $this, 'render_tickets_page' )
+		);
 	}
 
 	// ─── Page Renderers ───────────────────────────────────────────────────────
@@ -312,5 +322,9 @@ class FitnessPro_Admin {
 
 	public function render_coach_dashboard() {
 		( new FitnessPro_Coach_Panel( $this->version ) )->render();
+	}
+
+	public function render_tickets_page() {
+		( new FitnessPro_Ticket_Admin( $this->version ) )->render();
 	}
 }

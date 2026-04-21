@@ -398,3 +398,15 @@
 	font-size: 11px;
 	display: inline-block;
 }
+
+/* Chat button in coach row */
+.fp-btn-chat {
+	background: #f0f6fc !important;
+	color: #2271b1 !important;
+	border-color: #c0d6f0 !important;
+}
+
+.fp-btn-chat:hover {
+	background: #e8f0fb !important;
+	border-color: #2271b1 !important;
+}

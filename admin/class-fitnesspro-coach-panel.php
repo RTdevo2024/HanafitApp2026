@@ -36,6 +36,13 @@ class FitnessPro_Coach_Panel {
 			$this->version
 		);
 
+		wp_enqueue_style(
+			'fitnesspro-tickets',
+			FITNESSPRO_PLUGIN_URL . 'assets/css/tickets.css',
+			array( 'fitnesspro-admin-rtl' ),
+			$this->version
+		);
+
 		wp_enqueue_script(
 			'fitnesspro-coach-panel',
 			FITNESSPRO_PLUGIN_URL . 'assets/js/coach-panel.js',
@@ -170,6 +177,12 @@ class FitnessPro_Coach_Panel {
 									? esc_html__( 'منتشر شده', 'fitnesspro' )
 									: esc_html__( 'تخصیص برنامه', 'fitnesspro' ); ?>
 							</button>
+							<button type="button"
+									class="button fp-btn-chat"
+									data-user-id="<?php echo esc_attr( $plan['user_id'] ); ?>"
+									data-user="<?php echo esc_attr( $plan['display_name'] ); ?>">
+								<?php esc_html_e( 'پیام', 'fitnesspro' ); ?>
+							</button>
 						</div>
 					</div>
 					<?php endforeach; ?>
@@ -181,6 +194,33 @@ class FitnessPro_Coach_Panel {
 				</div>
 
 			</div><!-- .fp-coach-layout -->
+
+			<?php /* ── Coach chat panel ── */ ?>
+			<div class="fp-coach-chat-wrap" id="fp-coach-chat-wrap" hidden>
+				<div class="fp-coach-chat-header">
+					<span class="fp-coach-chat-title" id="fp-coach-chat-title"><?php esc_html_e( 'گفتگو', 'fitnesspro' ); ?></span>
+					<button type="button" class="fp-coach-chat-close" id="fp-coach-chat-close"
+					        aria-label="<?php esc_attr_e( 'بستن', 'fitnesspro' ); ?>">&#x2715;</button>
+				</div>
+				<div class="fp-coach-thread" id="fp-coach-thread" data-last-id="0"></div>
+				<form class="fp-coach-chat-form" id="fp-coach-chat-form-el" novalidate enctype="multipart/form-data">
+					<label class="fp-chat-attach-label" for="fp-chat-file-input"
+					       aria-label="<?php esc_attr_e( 'پیوست تصویر', 'fitnesspro' ); ?>">
+						<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+						<input type="file" id="fp-chat-file-input" accept="image/jpeg,image/png,image/gif,image/webp" hidden>
+					</label>
+					<div class="fp-chat-attach-preview" id="fp-chat-attach-preview" hidden>
+						<img id="fp-chat-preview-img" src="" alt="">
+						<button type="button" id="fp-chat-attach-remove" aria-label="<?php esc_attr_e( 'حذف', 'fitnesspro' ); ?>">&#x2715;</button>
+					</div>
+					<textarea id="fp-coach-chat-textarea"
+					          placeholder="<?php esc_attr_e( 'پیام خود را بنویسید...', 'fitnesspro' ); ?>"
+					          rows="1" maxlength="2000"></textarea>
+					<button type="submit" class="fp-coach-chat-send" id="fp-coach-chat-send">
+						<?php esc_html_e( 'ارسال', 'fitnesspro' ); ?>
+					</button>
+				</form>
+			</div><!-- .fp-coach-chat-wrap -->
 
 			<?php /* ── Template + plan editor modal ── */ ?>
 			<div class="fp-modal-wrap" id="fp-coach-modal" role="dialog" aria-modal="true" hidden>
@@ -408,6 +448,110 @@ class FitnessPro_Coach_Panel {
 			'coach_name' => $name,
 			'coach_id'   => $coach_id,
 		) );
+	}
+
+	// ─── AJAX: Coach Chat ────────────────────────────────────────────────────
+
+	public function ajax_coach_send_ticket(): void {
+		check_ajax_referer( self::NONCE_KEY, 'nonce' );
+
+		if ( ! $this->is_authorized() ) {
+			wp_send_json_error( array( 'message' => __( 'دسترسی غیرمجاز.', 'fitnesspro' ) ), 403 );
+		}
+
+		$coach_id  = get_current_user_id();
+		$user_id   = absint( $_POST['user_id'] ?? 0 );
+		$message   = sanitize_textarea_field( wp_unslash( $_POST['message'] ?? '' ) );
+		$has_file  = ! empty( $_FILES['attachment']['name'] );
+
+		if ( ! $user_id ) {
+			wp_send_json_error( array( 'message' => __( 'شناسه کاربر نامعتبر است.', 'fitnesspro' ) ) );
+		}
+
+		if ( '' === $message && ! $has_file ) {
+			wp_send_json_error( array( 'message' => __( 'پیام یا پیوست ضروری است.', 'fitnesspro' ) ) );
+		}
+
+		// Verify this coach is actually assigned to this user
+		if ( ! current_user_can( 'manage_options' ) ) {
+			global $wpdb;
+			$assigned = (int) $wpdb->get_var( $wpdb->prepare(
+				"SELECT id FROM {$wpdb->prefix}fitness_user_plans
+				 WHERE user_id = %d AND coach_id = %d AND status IN ('active','pending') LIMIT 1",
+				$user_id, $coach_id
+			) );
+			if ( ! $assigned ) {
+				wp_send_json_error( array( 'message' => __( 'این کاربر به شما تخصیص داده نشده است.', 'fitnesspro' ) ), 403 );
+			}
+		}
+
+		$attachment_url = '';
+		if ( $has_file ) {
+			$attachment_url = FitnessPro_Tickets::handle_upload( $_FILES['attachment'] );
+			if ( '' === $attachment_url ) {
+				wp_send_json_error( array( 'message' => __( 'خطا در بارگذاری فایل.', 'fitnesspro' ) ) );
+			}
+		}
+
+		$id = FitnessPro_Tickets::send_message( $coach_id, $user_id, $message, $attachment_url );
+		if ( ! $id ) {
+			wp_send_json_error( array( 'message' => __( 'خطا در ارسال پیام.', 'fitnesspro' ) ) );
+		}
+
+		// Notify the user
+		FitnessPro_Tickets_UI::push_notification_to(
+			$user_id,
+			'new_message',
+			sprintf(
+				/* translators: %s: coach display name */
+				__( 'پیام جدید از مربی %s', 'fitnesspro' ),
+				wp_get_current_user()->display_name
+			)
+		);
+
+		wp_send_json_success( array(
+			'id'             => $id,
+			'sender_id'      => $coach_id,
+			'message'        => $message,
+			'attachment_url' => $attachment_url,
+			'created_at'     => current_time( 'mysql', true ),
+		) );
+	}
+
+	public function ajax_coach_get_tickets(): void {
+		check_ajax_referer( self::NONCE_KEY, 'nonce' );
+
+		if ( ! $this->is_authorized() ) {
+			wp_send_json_error( array( 'message' => __( 'دسترسی غیرمجاز.', 'fitnesspro' ) ), 403 );
+		}
+
+		$coach_id = get_current_user_id();
+		$user_id  = absint( $_POST['user_id']  ?? 0 );
+		$since_id = absint( $_POST['since_id'] ?? 0 );
+
+		if ( ! $user_id ) {
+			wp_send_json_success( array( 'messages' => array() ) );
+			return;
+		}
+
+		global $wpdb;
+		$t = $wpdb->prefix . 'fitness_tickets';
+
+		$messages = (array) $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT * FROM {$t}
+				 WHERE id > %d
+				   AND ((sender_id = %d AND receiver_id = %d)
+				        OR (sender_id = %d AND receiver_id = %d))
+				 ORDER BY created_at ASC",
+				$since_id,
+				$user_id, $coach_id,
+				$coach_id, $user_id
+			),
+			ARRAY_A
+		);
+
+		wp_send_json_success( array( 'messages' => $messages ) );
 	}
 
 	// ─── Private Helpers ─────────────────────────────────────────────────────

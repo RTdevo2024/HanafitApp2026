@@ -484,9 +484,236 @@
 		}
 	}
 
+	// ── Coach chat panel ─────────────────────────────────────────────────────
+
+	class FitnessProCoachChat {
+		constructor( cfg ) {
+			this._ajax    = cfg.ajax_url;
+			this._nonce   = cfg.nonce;
+			this._userId  = 0;
+			this._file    = null;
+			this._polling = null;
+
+			document.addEventListener( 'DOMContentLoaded', () => this._init() );
+		}
+
+		_init() {
+			const list = document.getElementById( 'fp-coach-list' );
+			if ( ! list ) return;
+
+			list.addEventListener( 'click', ( e ) => {
+				const btn = e.target.closest( '.fp-btn-chat' );
+				if ( btn ) {
+					this._userId = parseInt( btn.dataset.userId, 10 );
+					this._openChat( btn.dataset.user || '' );
+				}
+			} );
+
+			document.getElementById( 'fp-coach-chat-close' )
+				?.addEventListener( 'click', () => this._closeChat() );
+
+			document.getElementById( 'fp-coach-chat-form-el' )
+				?.addEventListener( 'submit', ( e ) => { e.preventDefault(); this._send(); } );
+
+			const fileIn = document.getElementById( 'fp-chat-file-input' );
+			if ( fileIn ) {
+				fileIn.addEventListener( 'change', () => {
+					const f  = fileIn.files[ 0 ];
+					if ( ! f ) return;
+					const ok = [ 'image/jpeg', 'image/png', 'image/gif', 'image/webp' ].includes( f.type )
+					        && f.size <= 5 * 1024 * 1024;
+					if ( ! ok ) {
+						alert( 'فقط تصاویر (JPG, PNG, GIF, WebP) مجاز هستند. حداکثر ۵ مگابایت.' );
+						fileIn.value = '';
+						return;
+					}
+					this._file = f;
+					const reader = new FileReader();
+					reader.onload = ( ev ) => {
+						const img = document.getElementById( 'fp-chat-preview-img' );
+						if ( img ) img.src = ev.target.result;
+						document.getElementById( 'fp-chat-attach-preview' ).hidden = false;
+					};
+					reader.readAsDataURL( f );
+				} );
+			}
+
+			document.getElementById( 'fp-chat-attach-remove' )
+				?.addEventListener( 'click', () => this._clearFile() );
+
+			const ta = document.getElementById( 'fp-coach-chat-textarea' );
+			if ( ta ) {
+				ta.addEventListener( 'input', () => {
+					ta.style.height = 'auto';
+					ta.style.height = Math.min( ta.scrollHeight, 96 ) + 'px';
+				} );
+				ta.addEventListener( 'keydown', ( e ) => {
+					if ( e.key === 'Enter' && ! e.shiftKey ) {
+						e.preventDefault();
+						document.getElementById( 'fp-coach-chat-form-el' )
+							?.dispatchEvent( new Event( 'submit', { bubbles: true } ) );
+					}
+				} );
+			}
+		}
+
+		async _openChat( userName ) {
+			const wrap  = document.getElementById( 'fp-coach-chat-wrap' );
+			const title = document.getElementById( 'fp-coach-chat-title' );
+			if ( ! wrap ) return;
+			if ( title ) title.textContent = 'گفتگو با: ' + userName;
+			wrap.hidden = false;
+			this._stopPolling();
+			await this._loadAll();
+			this._startPolling();
+		}
+
+		_closeChat() {
+			this._stopPolling();
+			const wrap = document.getElementById( 'fp-coach-chat-wrap' );
+			if ( wrap ) wrap.hidden = true;
+			this._userId = 0;
+		}
+
+		async _loadAll() {
+			const thread = document.getElementById( 'fp-coach-thread' );
+			if ( ! thread || ! this._userId ) return;
+
+			thread.innerHTML = '<div style="text-align:center;color:#888;padding:16px;">در حال بارگذاری...</div>';
+			thread.dataset.lastId = '0';
+
+			const body = new FormData();
+			body.append( 'action',   'fp_coach_get_tickets' );
+			body.append( 'nonce',    this._nonce );
+			body.append( 'user_id',  this._userId );
+			body.append( 'since_id', '0' );
+
+			try {
+				const res  = await fetch( this._ajax, { method: 'POST', body } );
+				const json = await res.json();
+				if ( json?.success ) {
+					thread.innerHTML = '';
+					( json.data.messages || [] ).forEach( msg => {
+						const isMe = parseInt( msg.sender_id, 10 ) !== this._userId;
+						this._appendMsg( msg, isMe );
+					} );
+					thread.scrollTop = thread.scrollHeight;
+				}
+			} catch { /* network */ }
+		}
+
+		_startPolling() {
+			this._stopPolling();
+			this._polling = setInterval( () => this._pollNew(), 15000 );
+		}
+
+		_stopPolling() {
+			if ( this._polling ) { clearInterval( this._polling ); this._polling = null; }
+		}
+
+		async _pollNew() {
+			const thread = document.getElementById( 'fp-coach-thread' );
+			if ( ! thread || ! this._userId ) return;
+			const lastId = parseInt( thread.dataset.lastId || '0', 10 );
+
+			const body = new FormData();
+			body.append( 'action',   'fp_coach_get_tickets' );
+			body.append( 'nonce',    this._nonce );
+			body.append( 'user_id',  this._userId );
+			body.append( 'since_id', lastId );
+
+			try {
+				const res  = await fetch( this._ajax, { method: 'POST', body } );
+				const json = await res.json();
+				if ( json?.success && json.data?.messages?.length ) {
+					const wasBottom = thread.scrollHeight - thread.scrollTop - thread.clientHeight < 60;
+					json.data.messages.forEach( msg => {
+						const isMe = parseInt( msg.sender_id, 10 ) !== this._userId;
+						this._appendMsg( msg, isMe );
+					} );
+					if ( wasBottom ) thread.scrollTop = thread.scrollHeight;
+				}
+			} catch { /* network */ }
+		}
+
+		async _send() {
+			const ta      = document.getElementById( 'fp-coach-chat-textarea' );
+			const sendBtn = document.getElementById( 'fp-coach-chat-send' );
+			const message = ( ta?.value || '' ).trim();
+			if ( ! message && ! this._file ) return;
+
+			if ( sendBtn ) sendBtn.disabled = true;
+
+			const body = new FormData();
+			body.append( 'action',  'fp_coach_send_ticket' );
+			body.append( 'nonce',   this._nonce );
+			body.append( 'user_id', this._userId );
+			body.append( 'message', message );
+			if ( this._file ) {
+				body.append( 'attachment', this._file, this._file.name );
+			}
+
+			try {
+				const res  = await fetch( this._ajax, { method: 'POST', body } );
+				const json = await res.json();
+				if ( json?.success ) {
+					if ( ta ) { ta.value = ''; ta.style.height = 'auto'; }
+					this._clearFile();
+					this._appendMsg( json.data, true );
+					const thread = document.getElementById( 'fp-coach-thread' );
+					if ( thread ) thread.scrollTop = thread.scrollHeight;
+				} else {
+					alert( json?.data?.message || 'خطا در ارسال.' );
+				}
+			} catch {
+				alert( 'خطا در ارسال پیام.' );
+			} finally {
+				if ( sendBtn ) sendBtn.disabled = false;
+			}
+		}
+
+		_appendMsg( msg, isMe ) {
+			const thread = document.getElementById( 'fp-coach-thread' );
+			if ( ! thread ) return;
+			const div    = document.createElement( 'div' );
+			div.className  = 'fp-msg ' + ( isMe ? 'fp-msg--me' : 'fp-msg--them' );
+			div.dataset.id = msg.id || '';
+
+			let inner = '<div class="fp-msg-bubble">';
+			if ( msg.message ) {
+				inner += '<p class="fp-msg-text">'
+				       + String( msg.message ).replace( /&/g, '&amp;' ).replace( /</g, '&lt;' )
+				           .replace( />/g, '&gt;' ).replace( /\n/g, '<br>' )
+				       + '</p>';
+			}
+			if ( msg.attachment_url ) {
+				const u = String( msg.attachment_url ).replace( /"/g, '&quot;' );
+				inner += '<a href="' + u + '" target="_blank" rel="noopener" class="fp-msg-attachment">'
+				       + '<img src="' + u + '" alt="پیوست" loading="lazy"></a>';
+			}
+			inner += '<time class="fp-msg-time">' + ( msg.created_at ? new Date( msg.created_at ).toLocaleTimeString( 'fa-IR', { hour: '2-digit', minute: '2-digit' } ) : '' ) + '</time>';
+			inner += '</div>';
+
+			div.innerHTML = inner;
+			thread.appendChild( div );
+			if ( msg.id ) thread.dataset.lastId = msg.id;
+		}
+
+		_clearFile() {
+			this._file = null;
+			const fileIn  = document.getElementById( 'fp-chat-file-input' );
+			const preview = document.getElementById( 'fp-chat-attach-preview' );
+			const prevImg = document.getElementById( 'fp-chat-preview-img' );
+			if ( fileIn )  fileIn.value = '';
+			if ( prevImg ) prevImg.src = '';
+			if ( preview ) preview.hidden = true;
+		}
+	}
+
 	// Bootstrap
 	if ( typeof fp_coach !== 'undefined' ) {
 		new FitnessProCoachPanel( fp_coach );
+		new FitnessProCoachChat( fp_coach );
 	}
 	new FitnessProCoachAssign();
 } )();

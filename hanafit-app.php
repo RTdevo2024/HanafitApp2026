@@ -35,6 +35,9 @@ require_once FITNESSPRO_PLUGIN_DIR . 'public/class-fitnesspro-checkout-ui.php';
 require_once FITNESSPRO_PLUGIN_DIR . 'public/class-fitnesspro-ai-landing.php';
 require_once FITNESSPRO_PLUGIN_DIR . 'public/class-fitnesspro-user-dashboard.php';
 require_once FITNESSPRO_PLUGIN_DIR . 'includes/class-fitnesspro-wc-integration.php';
+require_once FITNESSPRO_PLUGIN_DIR . 'includes/class-fitnesspro-tickets.php';
+require_once FITNESSPRO_PLUGIN_DIR . 'public/class-fitnesspro-tickets-ui.php';
+require_once FITNESSPRO_PLUGIN_DIR . 'admin/class-fitnesspro-ticket-admin.php';
 require_once FITNESSPRO_PLUGIN_DIR . 'includes/class-fitnesspro-core.php';
 
 register_activation_hook( __FILE__, array( 'FitnessPro_Activator', 'activate' ) );

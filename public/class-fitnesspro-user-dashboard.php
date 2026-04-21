@@ -128,6 +128,17 @@ class FitnessPro_User_Dashboard {
 			'before'
 		);
 
+		// Minimal tickets config for the notification bell (tickets.js reads this)
+		wp_add_inline_script(
+			'fitnesspro-tickets',
+			'window.fp_tickets_config = window.fp_tickets_config || ' . wp_json_encode( array(
+				'ajax_url' => admin_url( 'admin-ajax.php' ),
+				'nonce'    => wp_create_nonce( FitnessPro_Tickets_UI::NONCE_KEY ),
+				'user_id'  => $user_id,
+			) ) . ';',
+			'before'
+		);
+
 		ob_start();
 		?>
 		<div id="fp-dashboard" class="fp-dashboard" dir="rtl">
@@ -146,8 +157,29 @@ class FitnessPro_User_Dashboard {
 							<?php echo esc_html( self::DAY_LABELS[ $today_key ] ?? '' ); ?>
 						</p>
 					</div>
-					<div class="fp-dash-logo" aria-hidden="true">
-						<?php echo $has_tabs ? '💪' : ( ( $plans[0]['type'] ?? '' ) === 'meal' ? '🥗' : '💪' ); ?>
+
+					<div class="fp-dash-header-right">
+						<?php /* ── Notification Bell ── */ ?>
+						<div class="fp-notif-wrap">
+							<button type="button" class="fp-notif-bell" id="fp-notif-bell"
+							        aria-label="<?php esc_attr_e( 'اعلان‌ها', 'fitnesspro' ); ?>">
+								<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+								<span class="fp-notif-badge" id="fp-notif-badge" hidden>0</span>
+							</button>
+							<div class="fp-notif-dropdown" id="fp-notif-dropdown" hidden>
+								<div class="fp-notif-head">
+									<span><?php esc_html_e( 'اعلان‌ها', 'fitnesspro' ); ?></span>
+									<button type="button" class="fp-notif-mark-read" id="fp-notif-mark-read">
+										<?php esc_html_e( 'همه خوانده شد', 'fitnesspro' ); ?>
+									</button>
+								</div>
+								<div class="fp-notif-list" id="fp-notif-list"></div>
+							</div>
+						</div>
+
+						<div class="fp-dash-logo" aria-hidden="true">
+							<?php echo $has_tabs ? '💪' : ( ( $plans[0]['type'] ?? '' ) === 'meal' ? '🥗' : '💪' ); ?>
+						</div>
 					</div>
 				</header>
 

@@ -56,16 +56,18 @@ class FitnessPro_Core {
 	}
 
 	private function define_admin_hooks() {
-		$admin    = new FitnessPro_Admin( $this->version );
-		$settings = new FitnessPro_Settings();
-		$coach    = new FitnessPro_Coach_Panel( $this->version );
+		$admin        = new FitnessPro_Admin( $this->version );
+		$settings     = new FitnessPro_Settings();
+		$coach        = new FitnessPro_Coach_Panel( $this->version );
+		$ticket_admin = new FitnessPro_Ticket_Admin( $this->version );
 
-		$this->loader->add_action( 'admin_enqueue_scripts', $admin, 'enqueue_styles' );
-		$this->loader->add_action( 'admin_enqueue_scripts', $admin, 'enqueue_scripts' );
-		$this->loader->add_action( 'admin_enqueue_scripts', $admin, 'enqueue_metabox_assets' );
-		$this->loader->add_action( 'admin_enqueue_scripts', $admin, 'enqueue_settings_assets' );
-		$this->loader->add_action( 'admin_enqueue_scripts', $coach, 'enqueue_assets' );
-		$this->loader->add_action( 'admin_menu', $admin, 'register_menus' );
+		$this->loader->add_action( 'admin_enqueue_scripts', $admin,        'enqueue_styles' );
+		$this->loader->add_action( 'admin_enqueue_scripts', $admin,        'enqueue_scripts' );
+		$this->loader->add_action( 'admin_enqueue_scripts', $admin,        'enqueue_metabox_assets' );
+		$this->loader->add_action( 'admin_enqueue_scripts', $admin,        'enqueue_settings_assets' );
+		$this->loader->add_action( 'admin_enqueue_scripts', $coach,        'enqueue_assets' );
+		$this->loader->add_action( 'admin_enqueue_scripts', $ticket_admin, 'enqueue_assets' );
+		$this->loader->add_action( 'admin_menu',            $admin,        'register_menus' );
 
 		// Product map save (form POST via admin-post.php)
 		$this->loader->add_action( 'admin_post_fp_save_product_map', $settings, 'handle_product_map_save' );
@@ -80,6 +82,13 @@ class FitnessPro_Core {
 
 		// Coach assignment — admin only
 		$this->loader->add_action( 'wp_ajax_fp_assign_coach', $coach, 'ajax_assign_coach' );
+
+		// Coach chat AJAX — coaches + admins
+		$this->loader->add_action( 'wp_ajax_fp_coach_send_ticket', $coach, 'ajax_coach_send_ticket' );
+		$this->loader->add_action( 'wp_ajax_fp_coach_get_tickets', $coach, 'ajax_coach_get_tickets' );
+
+		// Admin ticket monitor AJAX
+		$this->loader->add_action( 'wp_ajax_fp_admin_get_ticket_thread', $ticket_admin, 'ajax_get_thread' );
 	}
 
 	private function define_public_hooks() {
@@ -115,6 +124,15 @@ class FitnessPro_Core {
 		$this->loader->add_action( 'init',               $dashboard, 'register_shortcode' );
 		$this->loader->add_action( 'wp_enqueue_scripts', $dashboard, 'maybe_enqueue_assets' );
 		$this->loader->add_action( 'wp_ajax_fp_save_progress', $dashboard, 'ajax_save_progress' );
+
+		// Ticket system shortcode + AJAX (user-facing chat + notification bell)
+		$tickets_ui = new FitnessPro_Tickets_UI( $this->version );
+		$this->loader->add_action( 'init',               $tickets_ui, 'register_shortcode' );
+		$this->loader->add_action( 'wp_enqueue_scripts', $tickets_ui, 'maybe_enqueue_assets' );
+		$this->loader->add_action( 'wp_ajax_fp_send_ticket',             $tickets_ui, 'ajax_send_ticket' );
+		$this->loader->add_action( 'wp_ajax_fp_get_tickets',             $tickets_ui, 'ajax_get_tickets' );
+		$this->loader->add_action( 'wp_ajax_fp_get_notifications',       $tickets_ui, 'ajax_get_notifications' );
+		$this->loader->add_action( 'wp_ajax_fp_mark_notifications_read', $tickets_ui, 'ajax_mark_notifications_read' );
 	}
 
 	private function define_role_hooks() {
