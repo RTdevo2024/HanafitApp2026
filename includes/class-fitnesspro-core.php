@@ -109,6 +109,12 @@ class FitnessPro_Core {
 		$wc_integration = new FitnessPro_WC_Integration();
 		$this->loader->add_action( 'woocommerce_order_status_completed', $wc_integration, 'on_order_completed' );
 		$this->loader->add_action( 'woocommerce_thankyou',               $wc_integration, 'redirect_to_ai_landing' );
+
+		// User dashboard shortcode + AJAX
+		$dashboard = new FitnessPro_User_Dashboard( $this->version );
+		$this->loader->add_action( 'init',               $dashboard, 'register_shortcode' );
+		$this->loader->add_action( 'wp_enqueue_scripts', $dashboard, 'maybe_enqueue_assets' );
+		$this->loader->add_action( 'wp_ajax_fp_save_progress', $dashboard, 'ajax_save_progress' );
 	}
 
 	private function define_role_hooks() {

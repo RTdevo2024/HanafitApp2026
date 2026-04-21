@@ -33,6 +33,7 @@ require_once FITNESSPRO_PLUGIN_DIR . 'admin/class-fitnesspro-coach-panel.php';
 require_once FITNESSPRO_PLUGIN_DIR . 'public/class-fitnesspro-public.php';
 require_once FITNESSPRO_PLUGIN_DIR . 'public/class-fitnesspro-checkout-ui.php';
 require_once FITNESSPRO_PLUGIN_DIR . 'public/class-fitnesspro-ai-landing.php';
+require_once FITNESSPRO_PLUGIN_DIR . 'public/class-fitnesspro-user-dashboard.php';
 require_once FITNESSPRO_PLUGIN_DIR . 'includes/class-fitnesspro-wc-integration.php';
 require_once FITNESSPRO_PLUGIN_DIR . 'includes/class-fitnesspro-core.php';
 

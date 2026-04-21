@@ -252,10 +252,33 @@ This is **FitnessPro System** — a WordPress plugin providing an RTL-compatible
   - `wp_fitness_active_content` upsert uses `SELECT id` + conditional UPDATE/INSERT rather than `ON DUPLICATE KEY UPDATE` — avoids MySQL-specific syntax and keeps it compatible with `$wpdb` abstraction.
   - `wp_mail()` call is non-blocking (WP handles it via PHPMailer); if SMTP is not configured, it fails silently — `fp_notifications` user meta provides a reliable fallback notification channel for the frontend dashboard.
 
+## [2026-04-21] — Phase 7: User Dashboard & Daily Progress
+
+- **Action:** Built the `[fitnesspro_dashboard]` shortcode — a full-screen dark mobile-app UI showing today's workout/meal checklist, SVG progress ring, and a pulsing renewal CTA when the plan expires in ≤ 3 days.
+- **Files Created:**
+  - `public/class-fitnesspro-user-dashboard.php` — `FitnessPro_User_Dashboard`: `render()` dispatches to `render_dashboard()` / `render_preparing()` / `render_no_plan()` / `render_login_prompt()` based on user + plan state. `render_dashboard()` queries `wp_fitness_user_plans` INNER JOINed with `wp_fitness_active_content` (only plans with published content), renders one pane per active plan with: SVG progress ring (r=50, circumference=314.16, PHP-computed initial `stroke-dashoffset`), renewal banner (≤3 days) or expiry pill (>3 days), day title, workout exercise list or meal slot list with neon checkboxes. `ajax_save_progress()` verifies plan ownership, reads/updates/upserts `wp_fitness_daily_progress` using a nested `{plan_id: {key: bool}}` JSON structure so multiple plans share one record per user per day.
+  - `assets/css/user-dashboard.css` — Dark theme (`#0d0d0d`), CSS custom properties, Vazirmatn font, glassmorphism task cards (`backdrop-filter: blur`), custom neon checkbox (hidden `<input>`, `.fp-checkmark` square with `:checked` neon fill + `::after` tick), SVG ring with `transition: stroke-dashoffset 1s`, `.fp-ring--complete` pulsing glow animation, renewal banner with orange gradient + `fp-renewal-glow` pulse keyframe, chip badges (green for sets/reps, orange for kcal), full-height state screens for login/no-plan/preparing.
+  - `assets/js/user-dashboard.js` — `FitnessProUserDashboard` class: `_animateRings()` uses double-rAF to trigger CSS transition from 0 → target `stroke-dashoffset` on page load; `_bindTabs()` switches `.is-active` between plan panes; `_bindCheckboxes()` toggles `.is-done` on task item, calls `_updateRing(planId)` (recomputes offset + percentage + shows all-done), and `_persist()` (400ms debounce before AJAX `fp_save_progress`).
+- **Files Modified:**
+  - `hanafit-app.php` — Added `require_once` for `public/class-fitnesspro-user-dashboard.php`.
+  - `includes/class-fitnesspro-core.php` — `define_public_hooks()`: instantiates `FitnessPro_User_Dashboard`, wires `init → register_shortcode`, `wp_enqueue_scripts → maybe_enqueue_assets`, `wp_ajax_fp_save_progress → ajax_save_progress`.
+- **AJAX Endpoints — Phase 7:**
+
+  | Action | Handler | Access | Purpose |
+  |---|---|---|---|
+  | `fp_save_progress` | `ajax_save_progress()` | logged-in only | Toggle checklist item in `wp_fitness_daily_progress` |
+
+- **Key Decisions:**
+  - `render_dashboard()` only shows plans that have published content (INNER JOIN with `wp_fitness_active_content`) — users with only pending plans see the "preparing" screen, not a broken checklist.
+  - Progress ring rendered server-side at the correct value (no flash-of-zero) but always starts at `stroke-dashoffset = circumference` in HTML; JS uses double-`requestAnimationFrame` to trigger the CSS transition from 0 → target on first paint.
+  - Renewal check uses `days_until_expiry()` with end-of-day (`23:59:59`) so the plan remains valid for the full expiry date, not until midnight.
+  - Progress stored as `{plan_id: {key: bool}}` JSON — single `wp_fitness_daily_progress` row per user per day regardless of how many concurrent plans they have; nested by plan ID to prevent key collisions between workout exercise indices and meal slot names.
+  - AJAX save is debounced 400 ms per checkbox — rapid toggling doesn't flood the server; the UI updates instantly and the final state is persisted.
+  - Renewal CTA button (`fp-renewal-btn`) links to the `[fitness_checkout_flow]` page (found via DB query at render time) — no hardcoded URL, works regardless of page slug.
+  - `wp_add_inline_script()` with `'before'` position injects AJAX config before `user-dashboard.js` runs — called inside the shortcode renderer (which executes during `the_content` filter, before `wp_footer`), so the script tag order in the DOM is correct.
+
 ---
 
 # Next Steps
 
-1. **Frontend Dashboard** — Shortcode `[fitnesspro_dashboard]` showing active plans from `wp_fitness_active_content` with RTL day/meal layout.
-2. **Daily Progress Tracker** — AJAX endpoint for users to mark exercises complete; writes `completed_json` to `wp_fitness_daily_progress`.
-3. **Ticket System** — AJAX messaging into `wp_fitness_tickets`; coach and client views with attachment upload.
+1. **Ticket System** — AJAX messaging into `wp_fitness_tickets`; coach and client views with attachment upload.

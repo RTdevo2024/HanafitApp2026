@@ -1,0 +1,514 @@
+/* =========================================================
+   FitnessPro — User Dashboard
+   Dark-mode mobile-app feel, RTL, Vazirmatn
+   ========================================================= */
+
+/* ── CSS Custom Properties ── */
+#fp-dashboard {
+	--fp-bg:         #0d0d0d;
+	--fp-surface:    rgba(255, 255, 255, 0.04);
+	--fp-border:     rgba(255, 255, 255, 0.07);
+	--fp-neon:       #00ff39;
+	--fp-neon-dim:   rgba(0, 255, 57, 0.15);
+	--fp-neon-glow:  rgba(0, 255, 57, 0.5);
+	--fp-text:       #f0f0f0;
+	--fp-muted:      rgba(255, 255, 255, 0.45);
+	--fp-faint:      rgba(255, 255, 255, 0.2);
+	--fp-warn:       #ffb347;
+	--fp-warn-dim:   rgba(255, 100, 0, 0.18);
+	--fp-radius:     14px;
+	--fp-duration:   0.25s;
+}
+
+/* ── Full-screen Dark Container ── */
+#fp-dashboard,
+.fp-dashboard {
+	background: var(--fp-bg);
+	color: var(--fp-text);
+	font-family: 'Vazirmatn', sans-serif;
+	min-height: 100dvh;
+	min-height: 100vh;
+	padding: 0;
+	margin: 0;
+	-webkit-font-smoothing: antialiased;
+}
+
+.fp-dash-inner {
+	max-width: 480px;
+	margin: 0 auto;
+	padding: 24px 16px 48px;
+	display: flex;
+	flex-direction: column;
+	gap: 20px;
+}
+
+/* ── Header ── */
+.fp-dash-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+}
+
+.fp-dash-hi {
+	font-size: 18px;
+	font-weight: 700;
+	color: var(--fp-text);
+	margin: 0 0 3px;
+}
+
+.fp-dash-weekday {
+	font-size: 13px;
+	color: var(--fp-neon);
+	font-weight: 600;
+	margin: 0;
+}
+
+.fp-dash-logo {
+	font-size: 32px;
+	line-height: 1;
+	opacity: 0.85;
+}
+
+/* ── Plan Type Tabs ── */
+.fp-plan-tabs {
+	display: flex;
+	gap: 8px;
+	background: rgba(255, 255, 255, 0.03);
+	border: 1px solid var(--fp-border);
+	border-radius: 10px;
+	padding: 4px;
+}
+
+.fp-plan-tab {
+	flex: 1;
+	background: transparent;
+	border: none;
+	border-radius: 7px;
+	color: var(--fp-muted);
+	font-family: inherit;
+	font-size: 14px;
+	font-weight: 600;
+	padding: 9px 12px;
+	cursor: pointer;
+	transition: all var(--fp-duration) ease;
+}
+
+.fp-plan-tab.is-active {
+	background: var(--fp-neon-dim);
+	color: var(--fp-neon);
+	box-shadow: 0 0 12px rgba(0, 255, 57, 0.12);
+}
+
+/* ── Plan Pane ── */
+.fp-plan-pane {
+	display: none;
+	flex-direction: column;
+	gap: 20px;
+}
+
+.fp-plan-pane.is-active {
+	display: flex;
+}
+
+/* ── Progress Area ── */
+.fp-progress-area {
+	display: flex;
+	align-items: center;
+	gap: 20px;
+	background: var(--fp-surface);
+	border: 1px solid var(--fp-border);
+	border-radius: var(--fp-radius);
+	padding: 20px;
+	backdrop-filter: blur(10px);
+}
+
+/* Progress ring */
+.fp-ring-wrap {
+	position: relative;
+	width: 110px;
+	height: 110px;
+	flex-shrink: 0;
+}
+
+.fp-progress-svg {
+	width: 100%;
+	height: 100%;
+	overflow: visible;
+}
+
+.fp-ring-bg {
+	fill: none;
+	stroke: rgba(255, 255, 255, 0.06);
+	stroke-width: 8;
+}
+
+.fp-ring-fg {
+	fill: none;
+	stroke: var(--fp-neon);
+	stroke-width: 8;
+	stroke-linecap: round;
+	transition: stroke-dashoffset 1s cubic-bezier(0.4, 0, 0.2, 1);
+	filter: drop-shadow(0 0 5px var(--fp-neon-glow));
+}
+
+.fp-ring-fg.fp-ring--complete {
+	animation: fp-ring-celebrate 1.4s ease-in-out 2;
+}
+
+@keyframes fp-ring-celebrate {
+	0%, 100% { filter: drop-shadow(0 0 5px var(--fp-neon-glow)); }
+	50%       { filter: drop-shadow(0 0 18px var(--fp-neon)) drop-shadow(0 0 36px rgba(0, 255, 57, 0.35)); }
+}
+
+/* Progress ring center text */
+.fp-ring-center {
+	position: absolute;
+	inset: 0;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	pointer-events: none;
+}
+
+.fp-progress-pct {
+	font-size: 26px;
+	font-weight: 800;
+	color: var(--fp-text);
+	line-height: 1;
+	font-variant-numeric: tabular-nums;
+	transition: all 0.3s ease;
+}
+
+.fp-progress-unit {
+	font-size: 11px;
+	color: var(--fp-muted);
+	font-weight: 500;
+}
+
+.fp-progress-sub {
+	font-size: 10px;
+	color: var(--fp-neon);
+	font-weight: 600;
+	margin-top: 1px;
+}
+
+/* Progress aside (right column) */
+.fp-progress-aside {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+}
+
+/* ── Renewal Banner ── */
+.fp-renewal-banner {
+	background: var(--fp-warn-dim);
+	border: 1px solid rgba(255, 100, 0, 0.4);
+	border-radius: 10px;
+	padding: 12px 14px;
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+}
+
+.fp-renewal-text {
+	font-size: 13px;
+	color: var(--fp-warn);
+	margin: 0;
+	line-height: 1.5;
+}
+
+.fp-renewal-btn {
+	display: inline-block;
+	width: 100%;
+	text-align: center;
+	background: linear-gradient(135deg, #ff7b00, #ff3d00);
+	color: #fff;
+	font-family: inherit;
+	font-size: 14px;
+	font-weight: 800;
+	border-radius: 20px;
+	padding: 10px 16px;
+	text-decoration: none;
+	box-shadow: 0 4px 16px rgba(255, 80, 0, 0.35);
+	animation: fp-renewal-glow 2s ease-in-out infinite;
+	transition: transform 0.15s ease;
+}
+
+.fp-renewal-btn:hover {
+	transform: scale(1.02);
+}
+
+@keyframes fp-renewal-glow {
+	0%, 100% { box-shadow: 0 4px 16px rgba(255, 80, 0, 0.35); }
+	50%       { box-shadow: 0 4px 28px rgba(255, 80, 0, 0.6); }
+}
+
+/* ── Expiry pill ── */
+.fp-expiry-pill {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	font-size: 12px;
+	color: var(--fp-muted);
+	background: rgba(255, 255, 255, 0.04);
+	border: 1px solid var(--fp-border);
+	border-radius: 20px;
+	padding: 5px 12px;
+	align-self: flex-start;
+}
+
+/* ── All-done celebration ── */
+.fp-all-done {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 4px;
+}
+
+.fp-all-done span {
+	font-size: 22px;
+}
+
+.fp-all-done p {
+	font-size: 13px;
+	font-weight: 700;
+	color: var(--fp-neon);
+	margin: 0;
+}
+
+/* ── Day title ── */
+.fp-day-title {
+	font-size: 16px;
+	font-weight: 700;
+	color: var(--fp-text);
+	margin: 0;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+/* ── Rest day ── */
+.fp-rest-day {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 10px;
+	padding: 36px 20px;
+	background: var(--fp-surface);
+	border: 1px solid var(--fp-border);
+	border-radius: var(--fp-radius);
+	text-align: center;
+}
+
+.fp-rest-icon { font-size: 40px; }
+
+.fp-rest-day p {
+	font-size: 15px;
+	color: var(--fp-muted);
+	margin: 0;
+}
+
+/* ── Task List ── */
+.fp-task-list {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+}
+
+.fp-task-item {
+	background: var(--fp-surface);
+	border: 1px solid var(--fp-border);
+	border-radius: var(--fp-radius);
+	overflow: hidden;
+	transition: border-color var(--fp-duration) ease, opacity var(--fp-duration) ease;
+}
+
+.fp-task-item.is-done {
+	border-color: rgba(0, 255, 57, 0.2);
+	background: rgba(0, 255, 57, 0.03);
+	opacity: 0.7;
+}
+
+.fp-task-label {
+	display: flex;
+	align-items: flex-start;
+	gap: 14px;
+	padding: 14px 16px;
+	cursor: pointer;
+	-webkit-tap-highlight-color: transparent;
+}
+
+/* Hidden native checkbox */
+.fp-dash-check {
+	position: absolute;
+	opacity: 0;
+	width: 0;
+	height: 0;
+	pointer-events: none;
+}
+
+/* Custom neon checkbox */
+.fp-checkmark {
+	flex-shrink: 0;
+	width: 24px;
+	height: 24px;
+	border-radius: 7px;
+	border: 2px solid rgba(0, 255, 57, 0.35);
+	background: transparent;
+	position: relative;
+	transition: all var(--fp-duration) ease;
+	margin-top: 1px;
+}
+
+.fp-dash-check:checked ~ .fp-checkmark,
+.fp-task-item.is-done .fp-checkmark {
+	background: var(--fp-neon);
+	border-color: var(--fp-neon);
+	box-shadow: 0 0 10px rgba(0, 255, 57, 0.5), 0 0 20px rgba(0, 255, 57, 0.2);
+}
+
+/* Checkmark tick */
+.fp-dash-check:checked ~ .fp-checkmark::after,
+.fp-task-item.is-done .fp-checkmark::after {
+	content: '';
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	width: 6px;
+	height: 10px;
+	border: 2.5px solid #0d0d0d;
+	border-top: none;
+	border-left: none;
+	transform: translate(-50%, -60%) rotate(45deg);
+}
+
+/* Task body */
+.fp-task-body {
+	flex: 1;
+	min-width: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 5px;
+}
+
+.fp-task-name {
+	font-size: 15px;
+	font-weight: 700;
+	color: var(--fp-text);
+	line-height: 1.3;
+	transition: color var(--fp-duration) ease;
+}
+
+.fp-task-item.is-done .fp-task-name {
+	text-decoration: line-through;
+	color: var(--fp-muted);
+}
+
+.fp-task-items-text {
+	font-size: 13px;
+	color: var(--fp-muted);
+	margin: 0;
+	line-height: 1.5;
+}
+
+.fp-task-chips {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px;
+}
+
+.fp-chip {
+	display: inline-block;
+	font-size: 11px;
+	font-weight: 700;
+	color: var(--fp-neon);
+	background: var(--fp-neon-dim);
+	border: 1px solid rgba(0, 255, 57, 0.2);
+	border-radius: 20px;
+	padding: 2px 10px;
+	line-height: 1.6;
+	font-variant-numeric: tabular-nums;
+}
+
+.fp-chip--kcal {
+	color: #ffb347;
+	background: rgba(255, 170, 50, 0.1);
+	border-color: rgba(255, 170, 50, 0.25);
+}
+
+.fp-task-note {
+	font-size: 12px;
+	color: var(--fp-faint);
+	font-style: italic;
+	margin: 0;
+	line-height: 1.4;
+}
+
+/* ── Active press state on touch ── */
+.fp-task-item:active { opacity: 0.88; }
+
+/* ── State screens (login, no-plan, preparing) ── */
+.fp-dashboard--state {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	min-height: 100vh;
+	text-align: center;
+	padding: 40px 24px;
+	gap: 14px;
+}
+
+.fp-state-icon {
+	font-size: 56px;
+	line-height: 1;
+}
+
+.fp-dashboard--state h2 {
+	font-size: 20px;
+	font-weight: 800;
+	color: var(--fp-text);
+	margin: 0;
+}
+
+.fp-dashboard--state p {
+	font-size: 14px;
+	color: var(--fp-muted);
+	max-width: 300px;
+	margin: 0;
+	line-height: 1.6;
+}
+
+.fp-start-btn {
+	display: inline-block;
+	background: var(--fp-neon);
+	color: #0d0d0d;
+	font-family: inherit;
+	font-size: 15px;
+	font-weight: 800;
+	border-radius: 24px;
+	padding: 12px 32px;
+	text-decoration: none;
+	margin-top: 8px;
+	transition: box-shadow 0.2s ease, transform 0.15s ease;
+	box-shadow: 0 0 20px rgba(0, 255, 57, 0.35);
+}
+
+.fp-start-btn:hover {
+	box-shadow: 0 0 32px rgba(0, 255, 57, 0.55);
+	transform: scale(1.02);
+}
+
+/* ── Responsive ── */
+@media (max-width: 360px) {
+	.fp-dash-inner { padding: 16px 12px 40px; gap: 16px; }
+	.fp-ring-wrap { width: 95px; height: 95px; }
+	.fp-progress-pct { font-size: 22px; }
+	.fp-renewal-banner { padding: 10px 12px; }
+	.fp-task-label { padding: 12px 14px; gap: 12px; }
+}
